@@ -1,4 +1,4 @@
-# This .gitignore file should be placed at the root of your Unity project directory
+﻿# This .gitignore file should be placed at the root of your Unity project directory
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
@@ -11,7 +11,6 @@
 /[Ll]ogs/
 /[Uu]ser[Ss]ettings/
 *.log
-
 # By default unity supports Blender asset imports, *.blend1 blender files do not need to be commited to version control.
 *.blend1
 *.blend1.meta
@@ -97,3 +96,32 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+/[Aa]ssets/vFolders
+/[Aa]ssets/vHierarchy
+/Assets/vFolders.meta
+/Assets/vHierarchy.meta
+/Packages/packages-lock.json
+/Assets/vInspector
+/Assets/vInspector.meta
+/Assets/vFavorites
+/Assets/vFavorites.meta
+/Assets/vRuler
+
+/Assets/vRuler.meta
+/Assets/vTabs
+/Assets/vTabs.meta
+/.vscode
+/ProjectSettings
+/Packages
+
+/Assets/Plugins/CodeStage/
+/Assets/Plugins/CodeStage.meta
+/Assets/Plugins/Sirenix/
+/Assets/Plugins/Sirenix.meta
+/Assets/Plugins.meta
+/Assets/Wingman
+/Assets/Wingman.meta
+/Assets/Resource/Sprite/CardFrame
+/Assets/Resource/Sprite/CardFrame.meta
+/.claude
