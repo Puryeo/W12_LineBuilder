@@ -18,8 +18,8 @@ public class CombatManager : MonoBehaviour
 
     [Header("Damage Values")]
     public int baseWeaponDamage = 10;         // 줄 클리어 당 기본 데미지
-    public int bombDefuseMonsterDamage = 30; // 폭탄 해체 시 몬스터에 주는 데미지
-    public int bombExplosionPlayerDamage = 20; // 폭탄 폭발 데미지 (향후 사용)
+    //public int bombDefuseMonsterDamage = 30; // 폭탄 해체 시 몬스터에 주는 데미지
+    public int bombExplosionPlayerDamage = 20; // 폭탄 폭발 데미지
 
     [Header("Attribute Bonuses (temporary)")]
     [Tooltip("불 속성일 때 블록당 추가 데미지 (Grid 행/열이 Fire이면 해당 라인의 블록 수 * 이 값이 추가됩니다)")]
@@ -80,7 +80,6 @@ public class CombatManager : MonoBehaviour
         {
             baseWeaponDamage = baseWeaponDamage,
             sordBonusPerBlock = sordBonusPerBlock,
-            defuseDamagePerBomb = bombDefuseMonsterDamage,
             lightningMultiplier = 2,
             staffAoEDamage = 10,  //스태프
             hammerMultiplier = 2 // 망치
@@ -266,12 +265,12 @@ public class CombatManager : MonoBehaviour
             {
                 if (p.x < 0 || p.x >= _grid.width || p.y < 0 || p.y >= _grid.height) continue;
                 var world = _grid.GridToWorld(p) + gridPopupOffset;
-                SpawnGridDamagePopup(world, settings.defuseDamagePerBomb);
+                SpawnGridDamagePopup(world);
             }
         }
     }
 
-    private void SpawnGridDamagePopup(Vector3 worldPos, int amount)
+    private void SpawnGridDamagePopup(Vector3 worldPos, int amount = -1)
     {
         if (gridDamagePopupPrefab == null) return;
         var go = Instantiate(gridDamagePopupPrefab, worldPos, Quaternion.identity);
@@ -289,7 +288,10 @@ public class CombatManager : MonoBehaviour
         var tmp = go.GetComponentInChildren<TMPro.TextMeshPro>();
         if (tmp != null)
         {
-            tmp.text = $"<-{amount}>";
+            if(amount != -1)
+                tmp.text = $"<-{amount}>";
+            else
+                tmp.text = "폭탄 해제";
         }
     }
 

@@ -95,9 +95,6 @@ MonoBehaviour:
   - pattern: {fileID: 11400000, guid: 3d9a4c2c8105e8945822b0f32d7dc43f, type: 2}
     weight: 8
     repeat: 0
-  - pattern: {fileID: 11400000, guid: d3caf6cdc3ed95c43976800f202edb41, type: 2}
-    weight: 2
-    repeat: 0
 --- !u!1 &941270214390936634
 GameObject:
   m_ObjectHideFlags: 0
