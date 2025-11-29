@@ -15,5 +15,5 @@ MonoBehaviour:
   roundNumber: 0
   enemiesToSpawn:
   - {fileID: 318505273110147761, guid: c798392231c52cf4dadc57ae4b6bb6fa, type: 3}
-  - {fileID: 318505273110147761, guid: e9600bf6aae08ef4abce3aa33f5e5483, type: 3}
+  - {fileID: 318505273110147761, guid: c798392231c52cf4dadc57ae4b6bb6fa, type: 3}
   rewardGold: 100

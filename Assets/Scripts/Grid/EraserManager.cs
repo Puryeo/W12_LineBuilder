@@ -23,6 +23,10 @@ public class EraserManager : MonoBehaviour
     [Tooltip("설정한 previewColor 대신 GridGhostRenderer의 색을 사용하려면 체크하세요.")]
     public bool useGhostColorForPreview;
 
+    [Header("Turn-based Usage")]
+    [SerializeField, Tooltip("턴당 사용 가능한 지우개 횟수")]
+    private int eraserUsesPerTurn = 3;
+
     [Header("UI (optional)")]
     public TextMeshProUGUI eraserCountText;
     public GameObject eraserModeIndicator;
@@ -30,11 +34,11 @@ public class EraserManager : MonoBehaviour
     private readonly List<SpriteRenderer> _previewCells = new List<SpriteRenderer>(9);
     private bool _isActive;
     private bool _hasHover;
-    private int _eraserCount;
+    private int _remainingUsesThisTurn;
 
-    public int EraserCount => _eraserCount;
+    public int RemainingUses => _remainingUsesThisTurn;
     public bool IsEraserModeActive => _isActive;
-    public event System.Action<int> OnEraserCountChanged;
+    public event System.Action<int> OnEraserUsesChanged;
 
     private void Awake()
     {
@@ -51,9 +55,17 @@ public class EraserManager : MonoBehaviour
         grid ??= GridManager.Instance;
         worldCamera ??= Camera.main;
         PreparePreviewCells();
+
+        // TurnManager 이벤트 구독
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.OnTurnAdvanced += OnTurnAdvanced;
+        }
+
+        // 초기 충전
+        _remainingUsesThisTurn = eraserUsesPerTurn;
         UpdateEraserUI();
 
-        // 기존: eraserModeIndicator?.SetActive(false);
         try
         {
             if (eraserModeIndicator != null)
@@ -61,8 +73,6 @@ public class EraserManager : MonoBehaviour
         }
         catch (UnassignedReferenceException)
         {
-            // Inspector에 할당된 오브젝트가 삭제되어 "unassigned" 상태일 때 예외 발생함.
-            // 안전하게 null로 정리하고 경고 로그를 남깁니다.
             eraserModeIndicator = null;
             Debug.LogWarning("[EraserManager] eraserModeIndicator reference is missing in Inspector. Cleared reference to avoid exception.");
         }
@@ -103,14 +113,22 @@ public class EraserManager : MonoBehaviour
     }
 
     /// <summary>
+    /// 턴이 진행될 때 호출됩니다. 지우개 사용 횟수를 리셋합니다.
+    /// </summary>
+    private void OnTurnAdvanced(int turnCount)
+    {
+        _remainingUsesThisTurn = eraserUsesPerTurn;
+        UpdateEraserUI();
+        OnEraserUsesChanged?.Invoke(_remainingUsesThisTurn);
+        Debug.Log($"[EraserManager] Turn {turnCount}: Eraser uses recharged to {eraserUsesPerTurn}");
+    }
+
+    /// <summary>
     /// Called from the pass button OnClick event (in addition to whatever pass handling already exists).
-    /// This method strictly increments the eraser charge so the count only grows when pass is pressed.
+    /// 지우개 모드를 시작합니다 (충전 없이 대기 모드만 활성화).
     /// </summary>
     public void OnPassButtonClicked()
     {
-        _eraserCount++;
-        UpdateEraserUI();
-        OnEraserCountChanged?.Invoke(_eraserCount);
         StartEraserMode();
     }
 
@@ -124,9 +142,9 @@ public class EraserManager : MonoBehaviour
 
     public void StartEraserMode()
     {
-        if (_eraserCount <= 0)
+        if (_remainingUsesThisTurn <= 0)
         {
-            Debug.Log("[EraserManager] No eraser charges available.");
+            Debug.Log("[EraserManager] No eraser uses remaining this turn.");
             return;
         }
 
@@ -150,15 +168,18 @@ public class EraserManager : MonoBehaviour
 
     private bool TryUseEraserAt(Vector2Int center, bool bypassActiveCheck = false)
     {
-        if (_eraserCount <= 0 || grid == null) return false;
+        if (_remainingUsesThisTurn <= 0 || grid == null) return false;
         if (!_isActive && !bypassActiveCheck) return false;
 
+        // 실제 그리드를 지운 후에 사용 횟수 차감
         grid.ClearSquareCentered(center, 1);
-        _eraserCount--;
+        _remainingUsesThisTurn--;
         UpdateEraserUI();
-        OnEraserCountChanged?.Invoke(_eraserCount);
+        OnEraserUsesChanged?.Invoke(_remainingUsesThisTurn);
 
-        if (_isActive && _eraserCount <= 0)
+        Debug.Log($"[EraserManager] Eraser used at {center}. Remaining uses this turn: {_remainingUsesThisTurn}");
+
+        if (_isActive && _remainingUsesThisTurn <= 0)
         {
             CancelEraserMode();
         }
@@ -278,11 +299,17 @@ public class EraserManager : MonoBehaviour
     private void UpdateEraserUI()
     {
         if (eraserCountText != null)
-            eraserCountText.text = _eraserCount.ToString();
+            eraserCountText.text = _remainingUsesThisTurn.ToString();
     }
 
     private void OnDisable()
     {
         CancelEraserMode();
+
+        // TurnManager 이벤트 구독 해제
+        if (TurnManager.Instance != null)
+        {
+            TurnManager.Instance.OnTurnAdvanced -= OnTurnAdvanced;
+        }
     }
 }

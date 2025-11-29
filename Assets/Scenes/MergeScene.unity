@@ -5033,7 +5033,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &590444466
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11308,8 +11308,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60b8a57d62385194e9e24e9f5ec9b082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxRestStreak: 3
-  collapseDamagePerRemoved: 5
 --- !u!4 &1227308435
 Transform:
   m_ObjectHideFlags: 0
@@ -18511,7 +18509,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 9c6c253026cc40b4c8434931aba6a9f7, type: 2}
   duplicatePerType: 2
   handSize: 3
-  maxTemporaryHandSize: 4
 --- !u!4 &1980022381
 Transform:
   m_ObjectHideFlags: 0
@@ -18729,7 +18726,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   turnCountText: {fileID: 1936974381}
-  restDots: []
   bombCountdownText: {fileID: 1956832537475431092}
 --- !u!4 &2016001226
 Transform:
