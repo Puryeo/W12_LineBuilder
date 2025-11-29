@@ -182,11 +182,20 @@ public class GameFlowManager : MonoBehaviour
 
         if (currentRoundIndex < rounds.Count)
         {
+            // 핸드 초기화
+            if (CardManager.Instance != null)
+            {
+                CardManager.Instance.ResetHandForNextRound();
+            }
+
             StartPreparation(); // 다음 라운드 정비 시작
         }
         else
         {
-            // 모든 라운드 클리어
+            // 게임 클리어 처리
+            Debug.Log("All rounds finished! Game Clear.");
+            if (gameClearPanel != null)
+                gameClearPanel.SetActive(true);
         }
     }
 
