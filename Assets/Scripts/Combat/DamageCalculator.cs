@@ -1,0 +1,136 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+/// <summary>
+/// 확장 가능한 DamageCalculator 스켈레톤.
+/// 현재 구현:
+///  - baseDamage = (clearedRows.Count + clearedCols.Count) * settings.baseWeaponDamage
+///  - attributeDamage: row Fire 속성만 검사하여 보너스 합산 (blocksPerRow * fireBonusPerBlock)
+///  - defuseDamage = removedBombs.Count * settings.defuseDamagePerBomb
+///  - lightningApplied: 행/열 중 Lightning 존재 여부 (확장 포인트)
+///  - finalDamage = preLightningSum * (lightningApplied ? lightningMultiplier : 1)
+/// 향후: 열 검사, 셀 단위 속성, 물/풀/번개 규칙을 이 클래스에 추가하세요.
+/// </summary>
+public static class DamageCalculator
+{
+    public class Settings
+    {
+        public int baseWeaponDamage = 10;
+        public int sordBonusPerBlock = 1;
+        public int defuseDamagePerBomb = 30;
+        public int lightningMultiplier = 2;
+
+        public int staffAoEDamage = 10; // 스태프 라인당 광역 대미지
+        public int hammerMultiplier = 2; // 망치 라인 폭탄 존재 시 배율
+    }
+
+    public static DamageBreakdown Calculate(GridManager.LineClearResult result, GridManager grid, GridAttributeMap attrMap, Settings settings)
+    {
+        var d = new DamageBreakdown();
+        if (result == null || settings == null) return d;
+
+        int rowsCleared = (result.ClearedRows != null) ? result.ClearedRows.Count : 0;
+        int colsCleared = (result.ClearedCols != null) ? result.ClearedCols.Count : 0;
+
+        d.baseDamage = (rowsCleared + colsCleared) * Math.Max(0, settings.baseWeaponDamage);
+
+        int attrDamage = 0;
+        int aoeDamageSum = 0;
+        bool lightning = false;
+
+        if (attrMap != null && grid != null)
+        {
+            int width = Math.Max(1, grid.width);
+            int height = Math.Max(1, grid.height);
+            int perBlock = Math.Max(0, settings.sordBonusPerBlock);
+
+            if (result.ClearedRows != null)
+            {
+                foreach (var y in result.ClearedRows)
+                {
+                    if (y < 0 || y >= grid.height) continue;
+
+                    var at = attrMap.GetRow(y);
+
+                    if (at == AttributeType.WoodSord)
+                        attrDamage += width * perBlock;
+
+                    if (at == AttributeType.Hammer)
+                    {
+                        if (HasBombInRow(result.RemovedBombPositions, y))
+                        {
+                            d.baseDamage *= settings.hammerMultiplier;
+                            Debug.Log($"[Calculator] Hammer activated on Row {y}! Damage x{settings.hammerMultiplier}");
+                        }
+                    }
+
+                    if (at == AttributeType.Staff)
+                    {
+                        aoeDamageSum += settings.staffAoEDamage;
+                    }
+
+                }
+            }
+
+            if (result.ClearedCols != null)
+            {
+                foreach (var x in result.ClearedCols)
+                {
+                    if (x < 0 || x >= grid.width) continue;
+
+                    var at = attrMap.GetCol(x);
+
+                    if (at == AttributeType.WoodSord)
+                        attrDamage += height * perBlock;
+
+                    // [망치]
+                    if (at == AttributeType.Hammer)
+                    {
+                        if (HasBombInCol(result.RemovedBombPositions, x))
+                        {
+                            d.baseDamage *= settings.hammerMultiplier;
+                            Debug.Log($"[Calculator] Hammer activated on Col {x}! Damage x{settings.hammerMultiplier}");
+                        }
+                    }
+
+                    // [스태프]
+                    if (at == AttributeType.Staff)
+                    {
+                        aoeDamageSum += settings.staffAoEDamage;
+                    }
+                }
+            }
+        }
+
+        d.attributeDamage = attrDamage;
+
+        int defused = (result.RemovedBombPositions != null) ? result.RemovedBombPositions.Count : 0;
+        d.defuseDamage = defused * Math.Max(0, settings.defuseDamagePerBomb);
+
+        d.preLightningDamage = d.baseDamage + d.attributeDamage + d.defuseDamage;
+        d.lightningApplied = lightning;
+        d.finalDamage = d.preLightningDamage * (d.lightningApplied ? Math.Max(1, settings.lightningMultiplier) : 1);
+
+        // [스태프 결과 저장]
+        d.aoeDamage = aoeDamageSum;
+
+        return d;
+    }
+
+    // 헬퍼: 해당 행(y)에 폭탄이 있었는지
+    private static bool HasBombInRow(List<Vector2Int> bombs, int y)
+    {
+        if (bombs == null) return false;
+        foreach (var b in bombs) if (b.y == y) return true;
+        return false;
+    }
+
+    // 헬퍼: 해당 열(x)에 폭탄이 있었는지
+    private static bool HasBombInCol(List<Vector2Int> bombs, int x)
+    {
+        if (bombs == null) return false;
+        foreach (var b in bombs) if (b.x == x) return true;
+        return false;
+    }
+}

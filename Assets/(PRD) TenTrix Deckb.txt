@@ -1,0 +1,253 @@
+📄 제품 요구 사항 정의서 (PRD): TenTrix Deckbuilding RPG
+
+1. 프로젝트 개요 (Project Overview)
+
+프로젝트명: TenTrix Deckbuilding RPG (Prototype)
+
+엔진 버전: Unity 6000.0.x (Unity 6) 이상
+
+렌더 파이프라인: Universal Render Pipeline (URP) - 2D Renderer
+
+목표 플랫폼: PC (1920x1080 해상도 기준)
+
+핵심 장르: 퍼즐 로그라이크 (TenTrix 공간 관리 + 덱빌딩 전략)
+
+개발 목표: 핵심 루프(배치 vs 쉬기, 위기 관리)의 재미 검증 및 밸런스 테스트.
+
+2. 시스템 아키텍처 (System Architecture)
+
+싱글톤 패턴의 매니저 클래스를 중심으로 기능을 모듈화합니다.
+
+GameManager: 게임의 전체 상태(Start, Play, Win, Lose) 관리.
+
+GridManager: $8 \times 8$ 그리드 데이터, 블록 배치 유효성 검사, 라인 클리어 로직.
+
+CardManager: 덱(Deck), 손패(Hand), 버린 카드(Discard)의 순환 및 드로우 관리.
+
+InteractionManager: 드래그 앤 드롭 입력 처리 및 고스트(Ghost) 프리뷰 표시.
+
+TurnManager: 턴 흐름 제어(Input $\rightarrow$ Resolution $\rightarrow$ Tick) 및 쉬기(Rest) 로직.
+
+CombatManager: 플레이어/몬스터 HP, 장비 발동, 폭탄 생성/폭발 처리.
+
+UIManager: HUD 갱신 및 팝업 처리.
+
+3. 핵심 기능 명세 (Core Features)
+
+3.1 그리드 및 퍼즐 (Grid & Puzzle)
+
+그리드: $8 \times 8$ 셀 (좌표: 0,0 ~ 7,7).
+
+블록 데이터: ScriptableObject로 정의 (테트리스 7종 + $1 \times 1$).
+
+속성: Shape (Vector2Int 배열), Color.
+
+라인 클리어:
+
+블록 배치 직후 가로/세로 줄 검사.
+
+꽉 찬 줄은 즉시 제거되며, CombatManager에 이벤트(OnLineCleared) 전송.
+
+3.2 입력 시스템: 드래그 앤 드롭 (Drag & Drop)
+
+조작: 손패의 카드를 마우스로 드래그하여 그리드 위로 이동.
+
+프리뷰 (Ghost): 드래그 중인 블록이 그리드 위에 위치할 때, 배치 결과를 반투명하게 미리 표시.
+
+배치 가능: 초록색 틴트 / 불가: 붉은색 틴트 또는 표시 안 함.
+
+판정:
+
+Drop 시 유효한 위치면 배치 확정 $\rightarrow$ 카드 소모.
+
+유효하지 않으면 원래 손패 위치로 복귀(Snap Back).
+
+3.3 덱 및 손패 (Deck & Hand)
+
+덱 구성: 14장 (7종 $\times$ 2장). 덱 소진 시 Discard Pile을 섞어 재생성.
+
+손패: 항상 3장 유지.
+
+구조 (FIFO): [Left: Oldest] ... [Right: Newest]
+
+카드 사용 시 해당 인덱스 비우고, 오른쪽 카드들을 왼쪽으로 당긴 후 끝에 드로우.
+
+3.4 턴 및 쉬기 시스템 (Turn & Rest)
+
+행동력: 1 턴 = 1 행동 (배치 또는 쉬기).
+
+쉬기 (Rest) 기능:
+
+입력: UI 버튼 클릭.
+
+비용: 1 턴 소모.
+
+로직:
+
+손패의 가장 왼쪽(0번) 카드 버림.
+
+손패 정렬 및 신규 카드 1장 드로우.
+
+RestStreak (연속 쉬기 카운트) +1 증가.
+
+[강제 초기화 체크] 만약 RestStreak == 3이면 Grid Collapse 발동.
+
+강제 초기화 (Grid Collapse):
+
+조건: 연속 3회 쉬기 실행 시.
+
+효과: 그리드 내 모든 블록(폭탄 포함) 제거.
+
+페널티: (제거된 블록 수) * 5 만큼 플레이어 HP 감소.
+
+후처리: RestStreak 0으로 초기화.
+
+3.5 몬스터 및 폭탄 (Homework Mechanic)
+
+몬스터: 직접 공격하지 않음. 주기적으로 폭탄 생성.
+
+폭탄 생성:
+
+주기: 6~7 턴마다 (Random).
+
+위치: 그리드의 빈 칸 중 랜덤 1곳.
+
+폭탄 객체:
+
+타이머: 3턴 (턴 종료 시 감소).
+
+폭발: 타이머 0 도달 시 Player HP -20, 폭탄 소멸.
+
+해체: 라인 클리어에 포함되어 제거될 경우.
+
+해체 보상: Monster HP -30, 즉시 카드 1장 추가 드로우 (일시적 손패 4장).
+
+3.6 장비 및 전투 (Combat)
+
+장비 슬롯: 8개 (Slot #1 ~ #8). (프로토타입: 전 슬롯 기본 무기 장착).
+
+작동 (Cross-Slot): $N$번 슬롯 장비는 가로 $N$행 또는 세로 $N$열 클리어 시 발동.
+
+기본 무기: 발동 시 몬스터에게 10 대미지.
+
+4. 데이터 및 밸런스 (Data & Balancing)
+
+카테고리
+
+변수명
+
+값
+
+설명
+
+Player
+
+Max HP
+
+100
+
+
+
+Monster
+
+Max HP
+
+250
+
+쉬기 기능으로 인한 생존력 증가 반영
+
+Bomb
+
+Spawn Rate
+
+6 ~ 7 Turns
+
+
+
+
+
+Timer
+
+3 Turns
+
+
+
+
+
+Damage
+
+20
+
+폭발 시 플레이어 피해
+
+
+
+Defuse Bonus
+
+30
+
+해체 시 몬스터 피해
+
+Rest
+
+Max Streak
+
+3
+
+초기화 트리거 횟수
+
+
+
+Collapse Dmg
+
+x 5
+
+블록 개수 당 대미지 배율
+
+Weapon
+
+Base Dmg
+
+10
+
+줄 클리어 당 기본 피해
+
+5. UI / UX 요구사항 (UI Requirements)
+
+5.1 HUD
+
+상단: 몬스터 HP 바, 현재 턴 수(Turn Count).
+
+중앙: $8 \times 8$ 그리드 (배경).
+
+하단:
+
+플레이어 HP 바.
+
+손패 영역: 카드 3장 슬롯.
+
+쉬기 버튼:
+
+상태 표시: ● ○ ○ (1/3) $\rightarrow$ ● ● ○ (2/3) $\rightarrow$ <span style="color:red">● ● ● (위험)</span>.
+
+툴팁: "3회 연속 사용 시 초기화 대미지 발생".
+
+5.2 인게임 피드백
+
+드래그: 반투명 고스트 블록 표시.
+
+폭탄: 붉은색 블록 위에 남은 턴 숫자(Text) 오버레이. 숫자 1 이하 시 깜빡임 효과.
+
+대미지: 피격 대상(플레이어/몬스터) 위에 Floating Text로 숫자 표시.
+
+6. 개발 마일스톤 (Milestones)
+
+Phase 1 (Grid & Input): 그리드 생성, 블록 데이터, 드래그 앤 드롭 배치 구현.
+
+Phase 2 (Core Logic): 라인 클리어 감지, 덱/손패 순환 시스템.
+
+Phase 3 (Rest & Collapse): 쉬기 버튼, 연속 카운트, 강제 초기화 및 자해 대미지 구현.
+
+Phase 4 (Bomb & Combat): 턴 카운트 연동, 폭탄 생성/폭발/해체, HP 시스템 연결.
+
+Phase 5 (Polish): UI 연동, 승리/패배 팝업, 최종 수치 튜닝.

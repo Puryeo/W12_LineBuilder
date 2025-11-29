@@ -1,0 +1,207 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+
+public class SlotRewardSelectionPanel : MonoBehaviour
+{
+    [Header("Option Buttons")]
+    public Button option1Btn; // 예: 불 (WoodSord)
+    public Button option2Btn; // 예: 물 (WoodShield)
+    public Button option3Btn; // 예: 풀 (Grass)
+
+    [Header("Highlight Images (Assign outlines)")]
+    [Tooltip("선택 시 켜질 테두리 이미지들 (버튼 순서대로 할당)")]
+    public GameObject highlight1;
+    public GameObject highlight2;
+    public GameObject highlight3;
+
+    [Header("Action Buttons")]
+    public Button confirmBtn; // 받는다
+    public Button cancelBtn;  // 받지 않는다
+
+    [Header("Settings")]
+    public int rewardAmount = 4; // 지급할 개수
+
+    [Header("References")]
+    public AttributeInventoryUI attributeInventoryUI;
+
+    // 내부 상태
+    private Action _onSelectionComplete; // 부모에게 알릴 콜백
+    private AttributeType _selectedAttribute = AttributeType.None; // 현재 선택된 속성
+
+    private void Start()
+    {
+        // 1. 옵션 버튼 리스너 연결 (속성 타입은 기획에 맞게 수정 가능)
+        if (option1Btn != null)
+            option1Btn.onClick.AddListener(() => OnOptionClicked(AttributeType.Staff, 0));
+
+        if (option2Btn != null)
+            option2Btn.onClick.AddListener(() => OnOptionClicked(AttributeType.Hammer, 1));
+
+        if (option3Btn != null)
+            option3Btn.onClick.AddListener(() => OnOptionClicked(AttributeType.Cross, 2));
+
+        // --- 추가: 버튼 호버로 ExplainPanel 표시 (옵션 A: 기존 스크립트 수정 없이 내부에서 등록)
+        AddHoverToButton(option1Btn, AttributeType.Staff);
+        AddHoverToButton(option2Btn, AttributeType.Hammer);
+        AddHoverToButton(option3Btn, AttributeType.Cross);
+
+        // 2. 하단 액션 버튼 리스너 연결
+        if (confirmBtn != null)
+            confirmBtn.onClick.AddListener(OnConfirmClicked);
+
+        if (cancelBtn != null)
+            cancelBtn.onClick.AddListener(OnCancelClicked);
+    }
+
+    /// <summary>
+    /// 패널을 열 때 호출 (외부에서)
+    /// </summary>
+    public void Open(Action onSelectionComplete)
+    {
+        _onSelectionComplete = onSelectionComplete;
+
+        // 열릴 때마다 상태 초기화
+        ResetSelection();
+        gameObject.SetActive(true);
+    }
+
+    private void ResetSelection()
+    {
+        _selectedAttribute = AttributeType.None;
+
+        // 모든 하이라이트 끄기
+        if (highlight1 != null) highlight1.SetActive(false);
+        if (highlight2 != null) highlight2.SetActive(false);
+        if (highlight3 != null) highlight3.SetActive(false);
+
+        // 확인 버튼 비활성화 (선택된 게 없으므로)
+        if (confirmBtn != null) confirmBtn.interactable = false;
+    }
+
+    /// <summary>
+    /// 3개의 옵션 중 하나를 클릭했을 때
+    /// </summary>
+    private void OnOptionClicked(AttributeType type, int index)
+    {
+        _selectedAttribute = type;
+
+        // 1. 하이라이트 갱신 (선택된 놈만 켜고 나머지 끄기)
+        if (highlight1 != null) highlight1.SetActive(index == 0);
+        if (highlight2 != null) highlight2.SetActive(index == 1);
+        if (highlight3 != null) highlight3.SetActive(index == 2);
+
+        // 2. 확인 버튼 활성화
+        if (confirmBtn != null) confirmBtn.interactable = true;
+    }
+
+    /// <summary>
+    /// [받는다] 버튼 클릭
+    /// </summary>
+    private void OnConfirmClicked()
+    {
+        // 안전장치: 선택된 게 없으면 무시
+        if (_selectedAttribute == AttributeType.None) return;
+
+        if (attributeInventoryUI != null)
+        {
+            attributeInventoryUI.AddRoundRewards(_selectedAttribute, rewardAmount);
+            Debug.Log($"[Reward] {_selectedAttribute} x {rewardAmount} 지급 완료");
+        }
+
+        CloseAndNotify();
+    }
+
+    /// <summary>
+    /// [받지 않는다] 버튼 클릭
+    /// </summary>
+    private void OnCancelClicked()
+    {
+        Debug.Log("[Reward] 보상을 받지 않고 건너뜁니다.");
+        CloseAndNotify();
+    }
+
+    private void CloseAndNotify()
+    {
+        // 패널 닫기
+        gameObject.SetActive(false);
+
+        // 부모(팝업)에게 "이 보상 처리 끝났어"라고 알림
+        // (받았든 안 받았든 이 단계는 끝난 것이므로 완료 처리)
+        _onSelectionComplete?.Invoke();
+    }
+
+    // --- 추가 메서드: 버튼에 호버 이벤트를 동적으로 등록 ---
+    private void AddHoverToButton(Button btn, AttributeType type)
+    {
+        if (btn == null) return;
+
+        GameObject go = btn.gameObject;
+        EventTrigger trigger = go.GetComponent<EventTrigger>();
+        if (trigger == null) trigger = go.AddComponent<EventTrigger>();
+
+        // Enter
+        var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        // 캡쳐 문제 방지: 로컬에 복사
+        Button localBtn = btn;
+        AttributeType localType = type;
+        enter.callback.AddListener((data) =>
+        {
+            if (ExplainPanelUI.Instance == null) return;
+            // 드래그 중이면 호버 무시
+            if (InventoryItemUI.draggedItem != null) return;
+
+            // 1) 우선 SlotIcon 이름을 가진 자식 Image를 찾음 (대소문자 무시)
+            Image img = FindChildIconImage(localBtn);
+
+            // 2) Sprite 결정: AttributeInfo 기반 설명
+            Sprite sp = img != null ? img.sprite : null;
+            string desc = AttributeInfo.GetDescription(localType);
+            RectTransform target = (img != null) ? img.rectTransform : localBtn.transform as RectTransform;
+
+            ExplainPanelUI.Instance.Show(sp, desc, target);
+        });
+
+        // Exit
+        var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exit.callback.AddListener((data) =>
+        {
+            ExplainPanelUI.Instance?.Hide();
+        });
+
+        trigger.triggers.Add(enter);
+        trigger.triggers.Add(exit);
+    }
+
+    // 우선순위: 이름이 "SlotIcon"인 자식(Image) -> 자식 중 sprite가 있는 첫 Image(버튼 이미지 제외) -> 자식 중 sprite가 있는 첫 Image -> 버튼의 Image
+    private Image FindChildIconImage(Button btn)
+    {
+        Image buttonImage = btn.GetComponent<Image>();
+
+        // 1. name match (자손 전체 탐색)
+        var allImages = btn.GetComponentsInChildren<Image>(true);
+        foreach (var image in allImages)
+        {
+            if (string.Equals(image.gameObject.name, "SlotIcon", StringComparison.OrdinalIgnoreCase))
+                return image;
+        }
+
+        // 2. child image with sprite and not equal to button's image
+        foreach (var image in allImages)
+        {
+            if (image == buttonImage) continue;
+            if (image.sprite != null) return image;
+        }
+
+        // 3. any child image with sprite
+        foreach (var image in allImages)
+        {
+            if (image.sprite != null) return image;
+        }
+
+        // 4. fallback to button image
+        return buttonImage;
+    }
+}

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6df5752490828549b8d5a5213ce305d, type: 3}
+  m_Name: BombAttackPattern
+  m_EditorClassIdentifier: 
+  displayName: 
+  attackType: 0
+  delayTurns: 3
+  repeat: 0
+  weight: 1
+  attackIcon: {fileID: -1483665779731714255, guid: 1b6a3dce0cfbaea4f898564348f630ce, type: 3}
+  startTimer: 4
+  maxTimer: 5
+  spawnMode: 0
+  offsets: []
