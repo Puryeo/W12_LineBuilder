@@ -97,12 +97,10 @@ public class TurnManager : MonoBehaviour
         Debug.Log("[TurnManager] Hand is empty - automatically ending turn");
 
         // 손패 전체 버림 및 새 손패 드로우
-        if (CardManager.Instance != null)
+        /*if (CardManager.Instance != null)
         {
             CardManager.Instance.EndTurnDiscardAndDraw();
-        }
-
-        AdvanceTurn();
+        }*/
     }
 
     /// <summary>

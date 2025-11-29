@@ -7085,7 +7085,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC9C0\uC6B0\uAC1C"
+  m_text: "\uD134 \uC885\uB8CC"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: bf995470cf1ca9541bb81a691f2eae81, type: 2}
   m_sharedMaterial: {fileID: -1109891708026115891, guid: bf995470cf1ca9541bb81a691f2eae81, type: 2}
@@ -15783,6 +15783,7 @@ MonoBehaviour:
   rounds:
   - {fileID: 11400000, guid: 193c3fbe9b2075941add7fe61e920b63, type: 2}
   - {fileID: 11400000, guid: 6db8055abb827c1478ef76d8212a5c35, type: 2}
+  - {fileID: 11400000, guid: cbbd79a70c8448b45a2e36a739eb519d, type: 2}
   currentRoundIndex: 0
   preparationPanel: {fileID: 1089828838}
   battlePanel: {fileID: 989162369}
@@ -16547,19 +16548,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1227308434}
         m_TargetAssemblyTypeName: TurnManager, Assembly-CSharp
-        m_MethodName: DoRestAction
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
-      - m_Target: {fileID: 1926932074}
-        m_TargetAssemblyTypeName: EraserManager, Assembly-CSharp
-        m_MethodName: OnPassButtonClicked
+        m_MethodName: DoPassAction
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -18000,7 +17989,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1936974380
 RectTransform:
   m_ObjectHideFlags: 0
