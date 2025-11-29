@@ -6,8 +6,9 @@ using UnityEngine;
 /// CardManager:
 /// - 덱(deck), 버린덱(discard), 손패(hand) 관리
 /// - 덱 초기화(기본 블록 SO 배열을 Inspector에서 지정)
-/// - Draw, UseCardAt(index), Rest 로직
-/// - 폭탄 해제(CombatManager.OnBombDefused) 구독 시 즉시 드로우 처리 (한 턴 최대 hand 4 허용)
+/// - UseCardByReference로 카드 사용
+/// - 라인 완성 시 보너스 드로우 처리
+/// - 손패가 비면 자동으로 턴 종료
 /// </summary>
 public class CardManager : MonoBehaviour
 {
@@ -21,7 +22,6 @@ public class CardManager : MonoBehaviour
 
     [Header("Hand Settings")]
     public int handSize = 3;
-    public int maxTemporaryHandSize = 4; // 폭탄 해제시 일시적으로 허용되는 최대 손패
 
     // 내부 상태
     private List<BlockSO> _deck = new List<BlockSO>();
@@ -33,6 +33,7 @@ public class CardManager : MonoBehaviour
     public event Action OnDeckRefilled;
     public event Action<BlockSO> OnCardUsed;
     public event Action OnDeckChanged;
+    public event Action OnHandEmpty; // 새 이벤트: 손패가 비었을 때
 
     private System.Random _rng = new System.Random();
 
@@ -53,30 +54,7 @@ public class CardManager : MonoBehaviour
         InitializeDeckFromBaseSet();
         FillInitialHand();
 
-        // CombatManager의 OnBombDefused 구독 (있을 경우)
-        if (CombatManager.Instance != null)
-        {
-            CombatManager.Instance.OnBombDefused += HandleBombDefused;
-            Debug.Log("[CardManager] Subscribed to CombatManager.OnBombDefused");
-        }
-        else
-            Debug.LogWarning("[CardManager] CombatManager.Instance is null on Start. Will attempt subscribe on Enable.");
-
         Debug.Log($"[CardManager] Deck={_deck.Count} Discard={_discard.Count} Hand={_hand.Count}");
-    }
-
-    private void OnEnable()
-    {
-        Debug.Log("[CardManager] OnEnable");
-        if (CombatManager.Instance != null)
-            CombatManager.Instance.OnBombDefused += HandleBombDefused;
-    }
-
-    private void OnDisable()
-    {
-        Debug.Log("[CardManager] OnDisable");
-        if (CombatManager.Instance != null)
-            CombatManager.Instance.OnBombDefused -= HandleBombDefused;
     }
 
     #region Public API
@@ -88,34 +66,9 @@ public class CardManager : MonoBehaviour
     public IReadOnlyList<BlockSO> GetDiscard() => _discard.AsReadOnly();
 
     /// <summary>
-    /// 카드 사용: 해당 인덱스의 카드를 discard로 보내고 손패를 왼쪽으로 당긴 뒤 덱에서 1장 드로우.
-    /// 인덱스는 0..handSize-1 (0 = 가장 오래된, PRD 기준)
-    /// </summary>
-    public bool UseCardAt(int index)
-    {
-        if (index < 0 || index >= _hand.Count)
-        {
-            Debug.LogWarning($"[CardManager] UseCardAt invalid index {index}");
-            return false;
-        }
-        var used = _hand[index];
-        _discard.Add(used);
-        OnCardUsed?.Invoke(used);
-
-        // remove at index and shift left automatically due to List.RemoveAt
-        _hand.RemoveAt(index);
-
-        // draw to fill up to normal handSize (not temporary overflow)
-        DrawToHand(1);
-
-        Debug.Log($"[CardManager] UseCardAt({index}) used={used.name} handNow={_hand.Count} deckNow={_deck.Count} discardNow={_discard.Count}");
-        NotifyHandChanged();
-        return true;
-    }
-
-    /// <summary>
     /// 카드 참조로 사용: 현재 손패에서 해당 카드 객체를 찾아 사용합니다.
-    /// 인덱스 불일치(이벤트로 손패가 변경된 경우)를 방지하기 위해 사용.
+    /// 카드를 discard로 보내고 손패에서 제거합니다 (드로우는 하지 않음)
+    /// 손패가 비면 OnHandEmpty 이벤트를 발생시킵니다.
     /// </summary>
     public bool UseCardByReference(BlockSO card)
     {
@@ -132,46 +85,60 @@ public class CardManager : MonoBehaviour
             return false;
         }
 
-        Debug.Log($"[CardManager] UseCardByReference -> index {idx} card {card.name}");
-        return UseCardAt(idx);
-    }
+        var used = _hand[idx];
+        _discard.Add(used);
+        _hand.RemoveAt(idx);
 
-    /// <summary>
-    /// Rest: 가장 왼쪽(0번) 카드 버림 -> shift -> 덱에서 1장 드로우
-    /// 반환값: true if rest succeeded (hand had at least 1 card), false if nothing to discard
-    /// </summary>
-    public bool Rest()
-    {
+        OnCardUsed?.Invoke(used);
+
+        Debug.Log($"[CardManager] UseCardByReference card={used.name} handNow={_hand.Count} deckNow={_deck.Count} discardNow={_discard.Count}");
+        NotifyHandChanged();
+
+        // 손패가 비었는지 확인
         if (_hand.Count == 0)
         {
-            // Nothing to discard, but per rules Rest still consumes turn; return false to indicate no card removed.
-            Debug.Log("[CardManager] Rest called but hand empty.");
-            return false;
+            Debug.Log("[CardManager] Hand is now empty - triggering OnHandEmpty event");
+            OnHandEmpty?.Invoke();
         }
 
-        var discarded = _hand[0];
-        _discard.Add(discarded);
-        _hand.RemoveAt(0);
-
-        DrawToHand(1);
-
-        Debug.Log($"[CardManager] Rest -> discarded {discarded.name} handNow={_hand.Count}");
-        NotifyHandChanged();
         return true;
     }
 
     /// <summary>
-    /// 일반 드로우: 덱에서 n장 뽑아 손패에 추가(최대 handSize).
+    /// 일반 라인 완성 시 보너스 드로우 (1장)
     /// </summary>
-    public void Draw(int n = 1)
+    public void DrawBonusForNormalLine()
     {
-        for (int i = 0; i < n; i++)
-        {
-            if (_hand.Count >= handSize) break;
-            DrawSingle();
-        }
-        Debug.Log($"[CardManager] Draw({n}) -> handNow={_hand.Count} deckNow={_deck.Count}");
+        Debug.Log("[CardManager] DrawBonusForNormalLine - drawing 1 card");
+        DrawToHandIgnoringLimit(1);
         NotifyHandChanged();
+    }
+
+    /// <summary>
+    /// 폭탄 포함 라인 완성 시 보너스 드로우 (2장)
+    /// </summary>
+    public void DrawBonusForBombLine()
+    {
+        Debug.Log("[CardManager] DrawBonusForBombLine - drawing 2 cards");
+        DrawToHandIgnoringLimit(2);
+        NotifyHandChanged();
+    }
+
+    /// <summary>
+    /// 턴 종료 시 호출: 현재 손패 전체를 버리고 새로운 손패를 드로우
+    /// </summary>
+    public void EndTurnDiscardAndDraw()
+    {
+        Debug.Log($"[CardManager] EndTurnDiscardAndDraw - discarding {_hand.Count} cards");
+
+        // 현재 손패 전체를 버린 덱으로
+        _discard.AddRange(_hand);
+        _hand.Clear();
+
+        // 새로운 손패 드로우
+        FillInitialHand();
+
+        Debug.Log($"[CardManager] After EndTurnDiscardAndDraw: Hand={_hand.Count} Deck={_deck.Count} Discard={_discard.Count}");
     }
 
     /// <summary>
@@ -239,15 +206,17 @@ public class CardManager : MonoBehaviour
 
     private void FillInitialHand()
     {
-        DrawToHand(handSize);
+        DrawToHandIgnoringLimit(handSize);
         NotifyHandChanged();
     }
 
-    private void DrawToHand(int count)
+    /// <summary>
+    /// handSize 제한을 무시하고 지정된 수만큼 드로우 (보너스 드로우용)
+    /// </summary>
+    private void DrawToHandIgnoringLimit(int count)
     {
         for (int i = 0; i < count; i++)
         {
-            if (_hand.Count >= handSize) break;
             DrawSingle();
         }
     }
@@ -284,49 +253,6 @@ public class CardManager : MonoBehaviour
         catch (Exception ex)
         {
             Debug.LogError($"[CardManager] OnHandChanged handler threw: {ex}");
-        }
-    }
-
-    #endregion
-
-    #region Bomb Defuse Handling
-
-    /// <summary>
-    /// CombatManager.OnBombDefused 구독 핸들러
-    /// 즉시 드로우: PRD에 따라 폭탄 1개당 카드 1장 즉시 드로우, 일시적 hand 최대 허용은 maxTemporaryHandSize
-    /// </summary>
-    private void HandleBombDefused(int defusedCount)
-    {
-        Debug.Log($"[CardManager] HandleBombDefused called defusedCount={defusedCount}");
-        if (defusedCount <= 0) return;
-        int drawn = 0;
-        for (int i = 0; i < defusedCount; i++)
-        {
-            if (_hand.Count >= maxTemporaryHandSize) break;
-            // draw one ignoring normal handSize cap
-            if (_deck.Count == 0 && _discard.Count == 0)
-            {
-                Debug.Log("[CardManager] No cards to draw on bomb defuse.");
-                break;
-            }
-            // ensure deck available
-            if (_deck.Count == 0)
-            {
-                _deck.AddRange(_discard);
-                _discard.Clear();
-                ShuffleDeck();
-            }
-
-            var card = _deck[_deck.Count - 1];
-            _deck.RemoveAt(_deck.Count - 1);
-            _hand.Add(card);
-            drawn++;
-        }
-
-        if (drawn > 0)
-        {
-            Debug.Log($"[CardManager] Bomb defuse drew {drawn} card(s). Hand size now {_hand.Count}.");
-            NotifyHandChanged();
         }
     }
 
