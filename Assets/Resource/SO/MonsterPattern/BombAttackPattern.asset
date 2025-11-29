@@ -18,7 +18,7 @@ MonoBehaviour:
   repeat: 0
   weight: 1
   attackIcon: {fileID: -1483665779731714255, guid: 1b6a3dce0cfbaea4f898564348f630ce, type: 3}
-  startTimer: 2
-  maxTimer: 2
+  startTimer: 4
+  maxTimer: 5
   spawnMode: 0
   offsets: []
