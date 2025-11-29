@@ -56,7 +56,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   monsterName: "\uCE7C\uC7C1\uC774"
-  maxHP: 100
+  maxHP: 50
   monsterUI: {fileID: 1042574797997495745}
   monsterIdx: 0
   startingHP: -1
