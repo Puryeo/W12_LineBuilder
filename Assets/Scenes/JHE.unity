@@ -6477,7 +6477,6 @@ MonoBehaviour:
   playerMaxHP: 100
   monsterMaxHP: 250
   baseWeaponDamage: 10
-  bombDefuseMonsterDamage: 30
   bombExplosionPlayerDamage: 20
   sordBonusPerBlock: 1
   gridDamagePopupPrefab: {fileID: 8610739867175518237, guid: c83136a3fcba079459ced3e4f3a06910, type: 3}

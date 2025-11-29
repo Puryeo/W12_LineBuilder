@@ -54,7 +54,10 @@ public class DamagePopup : MonoBehaviour
         if (text != null)
         {
             // 텍스트 내용 (요청 포맷)
-            text.text = $"{amount}!"; 
+            if(amount != -1)
+                text.text = $"{amount}!";
+            else
+                text.text = $"폭탄 해제!";
             text.alignment = TextAlignmentOptions.Center;
 
             // 색상 결정: highlight 조건 충족 시 highlightColor 사용, 아니면 prefab 기본색 사용
