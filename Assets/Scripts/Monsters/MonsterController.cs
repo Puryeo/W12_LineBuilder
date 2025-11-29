@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,6 +11,15 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class MonsterController : MonoBehaviour, IMonsterController
 {
+    [Header("Attack Animation Settings")]
+    [Tooltip("공격 이펙트 프리팹 (AutoPlayEffect 컴포넌트 필요)")]
+    public GameObject attackEffectPrefab;
+
+    [Tooltip("공격 애니메이션 최소 대기 시간 (초)")]
+    public float attackAnimationMinDuration = 0.8f;
+
+    [Tooltip("공격 애니메이션 최대 대기 시간 (초)")]
+    public float attackAnimationMaxDuration = 2.0f;
     [Serializable]
     public class PatternElement
     {
@@ -37,6 +47,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
     private static readonly System.Random _rng = new System.Random();
 
     private bool _isDead = false;
+    private bool _isExecuting = false; // 공격 실행 중 플래그 (중복 방지)
 
     private void Awake()
     {
@@ -277,5 +288,221 @@ public class MonsterController : MonoBehaviour, IMonsterController
         }
 
         return _patterns[_rng.Next(0, _patterns.Count)];
+    }
+
+    // ========================================
+    // 코루틴 기반 턴 시스템 메서드
+    // ========================================
+
+    /// <summary>
+    /// 패턴 실행 준비가 되었는지 확인
+    /// </summary>
+    public bool IsReadyToExecute()
+    {
+        return RemainingTurns <= 0 &&
+               _currentElement != null &&
+               !_isDead &&
+               !_isExecuting;
+    }
+
+    /// <summary>
+    /// 몬스터가 죽었는지 확인
+    /// </summary>
+    public bool IsDead()
+    {
+        return _isDead || (_monster != null && _monster.IsDead);
+    }
+
+    /// <summary>
+    /// 패턴을 코루틴으로 실행 (애니메이션 대기 포함)
+    /// </summary>
+    public IEnumerator ExecutePatternRoutine()
+    {
+        // 진입 체크
+        if (_isExecuting)
+        {
+            Debug.LogWarning($"[MonsterController] Already executing pattern on {name}, skip");
+            yield break;
+        }
+
+        _isExecuting = true;
+
+        try
+        {
+            // 사망/패턴 체크
+            if (_isDead || (_monster != null && _monster.IsDead) || _currentElement == null)
+            {
+                CancelScheduledPattern();
+                yield break;
+            }
+
+            var pat = _currentElement.pattern;
+            if (pat == null)
+            {
+                CancelScheduledPattern();
+                yield break;
+            }
+
+            Debug.Log($"[MonsterController] ExecutePatternRoutine -> {pat.displayName} ({pat.attackType}) on {name}");
+
+            // 타입별 공격 처리
+            if (pat.attackType == AttackType.Damage)
+            {
+                var dp = pat as DamageAttackPatternSO;
+                if (dp != null)
+                {
+                    // 1. 공격 이펙트 스폰
+                    GameObject attackEffect = null;
+                    if (attackEffectPrefab != null)
+                    {
+                        attackEffect = Instantiate(attackEffectPrefab, transform.position, Quaternion.identity);
+                        Debug.Log($"[MonsterController] Attack effect spawned for {name}");
+                    }
+
+                    // 2. 애니메이션 완료 대기 (하이브리드)
+                    float startTime = Time.time;
+                    bool animationComplete = false;
+
+                    // 이펙트가 AutoPlayEffect를 가지고 있으면 완료 이벤트 구독
+                    if (attackEffect != null)
+                    {
+                        var autoPlay = attackEffect.GetComponent<AutoPlayEffect>();
+                        if (autoPlay != null)
+                        {
+                            autoPlay.OnEffectComplete += () => animationComplete = true;
+                        }
+                    }
+
+                    while (Time.time - startTime < attackAnimationMaxDuration)
+                    {
+                        // 중간 사망 체크
+                        if (_isDead || (_monster != null && _monster.IsDead))
+                        {
+                            if (attackEffect != null) Destroy(attackEffect);
+                            yield break;
+                        }
+
+                        // 최소 시간 경과 AND 애니메이션 완료
+                        if (Time.time - startTime >= attackAnimationMinDuration)
+                        {
+                            if (animationComplete || attackEffect == null)
+                            {
+                                break;
+                            }
+                        }
+
+                        yield return null;
+                    }
+
+                    // 3. 다시 사망 체크
+                    if (_isDead || (_monster != null && _monster.IsDead))
+                    {
+                        yield break;
+                    }
+
+                    // 4. 실제 데미지 적용
+                    if (CombatManager.Instance != null)
+                    {
+                        CombatManager.Instance.ApplyPlayerDamage(dp.damage, $"Monster:{name}");
+                        Debug.Log($"[MonsterController] Applied {dp.damage} damage to player from {name}");
+                    }
+                }
+            }
+            else if (pat.attackType == AttackType.Bomb)
+            {
+                var bp = pat as BombAttackPatternSO;
+                if (bp != null)
+                {
+                    // 1. 폭탄 스폰 이펙트
+                    GameObject spawnEffect = null;
+                    if (attackEffectPrefab != null)
+                    {
+                        spawnEffect = Instantiate(attackEffectPrefab, transform.position, Quaternion.identity);
+                        Debug.Log($"[MonsterController] Bomb spawn effect spawned for {name}");
+                    }
+
+                    // 2. 대기
+                    float startTime = Time.time;
+                    bool effectComplete = false;
+
+                    if (spawnEffect != null)
+                    {
+                        var autoPlay = spawnEffect.GetComponent<AutoPlayEffect>();
+                        if (autoPlay != null)
+                        {
+                            autoPlay.OnEffectComplete += () => effectComplete = true;
+                        }
+                    }
+
+                    while (Time.time - startTime < attackAnimationMaxDuration)
+                    {
+                        if (_isDead || (_monster != null && _monster.IsDead))
+                        {
+                            if (spawnEffect != null) Destroy(spawnEffect);
+                            yield break;
+                        }
+
+                        if (Time.time - startTime >= attackAnimationMinDuration)
+                        {
+                            if (effectComplete || spawnEffect == null)
+                            {
+                                break;
+                            }
+                        }
+
+                        yield return null;
+                    }
+
+                    // 3. 사망 체크
+                    if (_isDead || (_monster != null && _monster.IsDead))
+                    {
+                        yield break;
+                    }
+
+                    // 4. 실제 폭탄 스폰
+                    if (BombManager.Instance != null)
+                    {
+                        Vector2Int spawnPos;
+                        bool spawned = BombManager.Instance.SpawnRandomGridBomb(bp.startTimer, bp.maxTimer, out spawnPos);
+                        Debug.Log($"[MonsterController] Bomb spawn attempted by {name}: success={spawned} pos={spawnPos}");
+                    }
+                }
+            }
+
+            // 다음 패턴 스케줄링 (기존 로직 유지)
+            if (!_isDead)
+            {
+                if (_currentElement != null && _currentElement.repeat)
+                {
+                    RemainingTurns = Math.Max(0, _currentElement.pattern.delayTurns);
+                    _ui?.UpdatePatternTurns(RemainingTurns);
+                    Debug.Log($"[MonsterController] Pattern '{_currentElement.pattern.displayName}' repeat scheduled on {name} for {RemainingTurns} turns.");
+                }
+                else
+                {
+                    var next = SelectNextPattern();
+                    if (next != null && next.pattern != null)
+                    {
+                        _currentElement = next;
+                        RemainingTurns = Math.Max(0, next.pattern.delayTurns);
+                        _ui?.BindPattern(CurrentPattern, RemainingTurns);
+                        Debug.Log($"[MonsterController] After execute, immediately selected next '{next.pattern.displayName}' for {RemainingTurns} turns on {name}");
+                    }
+                    else
+                    {
+                        CancelScheduledPattern();
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[MonsterController] Exception during ExecutePatternRoutine on {name}: {ex}");
+            CancelScheduledPattern();
+        }
+        finally
+        {
+            _isExecuting = false;
+        }
     }
 }

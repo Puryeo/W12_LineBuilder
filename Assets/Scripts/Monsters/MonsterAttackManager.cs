@@ -40,4 +40,22 @@ public class MonsterAttackManager : MonoBehaviour
             try { ctrl.TickTurn(); } catch (System.Exception ex) { Debug.LogError($"[MonsterAttackManager] Exception in TickTurn: {ex}"); }
         }
     }
+
+    /// <summary>
+    /// 등록된 몬스터 목록 반환 (스냅샷 복사본)
+    /// TurnManager가 코루틴에서 안전하게 순회하기 위해 사용
+    /// </summary>
+    public List<IMonsterController> GetRegisteredMonsters()
+    {
+        // 스냅샷 복사: 순회 중 리스트 변경으로부터 안전
+        var snapshot = new List<IMonsterController>(_registered.Count);
+        for (int i = 0; i < _registered.Count; i++)
+        {
+            if (_registered[i] != null)
+            {
+                snapshot.Add(_registered[i]);
+            }
+        }
+        return snapshot;
+    }
 }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -7,10 +9,18 @@ using UnityEngine;
 /// - 기본무기 데미지: (clearedRows.Count + clearedCols.Count) * baseWeaponDamage
 /// - 폭탄 해체 보상: 각 폭탄마다 monsterDamageOnDefuse 적용 + OnBombDefused 이벤트 발생
 /// - 승패 상태 로그 출력
+/// - 라인 클리어를 큐로 처리하여 순차적으로 애니메이션 재생
 /// </summary>
 public class CombatManager : MonoBehaviour
 {
     public static CombatManager Instance { get; private set; }
+
+    [Header("Line Clear Animation")]
+    [Tooltip("라인 클리어 애니메이션 최소 지속 시간 (초)")]
+    public float lineClearAnimationMinDuration = 0.5f;
+
+    [Tooltip("라인 클리어 애니메이션 최대 지속 시간 (초)")]
+    public float lineClearAnimationMaxDuration = 1.5f;
 
     [Header("HP")]
     public int playerMaxHP = 100;
@@ -39,6 +49,10 @@ public class CombatManager : MonoBehaviour
 
     private GridAttributeMap _attrMap;
     private GridManager _grid;
+
+    // 라인 클리어 큐 시스템
+    private readonly Queue<GridManager.LineClearResult> _lineClearQueue = new Queue<GridManager.LineClearResult>();
+    private bool _isProcessingLineClear = false;
 
     private void Awake()
     {
@@ -74,6 +88,61 @@ public class CombatManager : MonoBehaviour
     private void HandleLinesCleared(GridManager.LineClearResult result)
     {
         if (result == null) return;
+        if (!result.HasClear) return;
+
+        // 큐에 추가
+        _lineClearQueue.Enqueue(result);
+
+        // 처리 중이 아니면 코루틴 시작
+        if (!_isProcessingLineClear)
+        {
+            StartCoroutine(ProcessLineClearQueueRoutine());
+        }
+    }
+
+    /// <summary>
+    /// 라인 클리어 큐 처리 코루틴
+    /// </summary>
+    private IEnumerator ProcessLineClearQueueRoutine()
+    {
+        _isProcessingLineClear = true;
+
+        // 입력 차단
+        if (InputBlocker.Instance != null)
+        {
+            InputBlocker.Instance.BlockInput("LineClearProcessing");
+        }
+
+        try
+        {
+            while (_lineClearQueue.Count > 0)
+            {
+                var result = _lineClearQueue.Dequeue();
+                yield return StartCoroutine(ResolveLineClearRoutine(result));
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[CombatManager] Line clear queue processing failed: {ex}");
+        }
+        finally
+        {
+            _isProcessingLineClear = false;
+            _lineClearQueue.Clear(); // 안전장치: 남은 큐 비우기
+
+            // 입력 차단 해제
+            if (InputBlocker.Instance != null)
+            {
+                InputBlocker.Instance.UnblockInput("LineClearProcessing");
+            }
+        }
+    }
+
+    /// <summary>
+    /// 개별 라인 클리어 처리 코루틴
+    /// </summary>
+    private IEnumerator ResolveLineClearRoutine(GridManager.LineClearResult result)
+    {
 
         // Settings 구성 (향후 UI/데이터로 노출 가능)
         var settings = new DamageCalculator.Settings
@@ -87,10 +156,28 @@ public class CombatManager : MonoBehaviour
 
         var breakdown = DamageCalculator.Calculate(result, _grid, _attrMap, settings);
 
-        string origin = "CombatManager.HandleLinesCleared";
+        string origin = "CombatManager.ResolveLineClearRoutine";
         Debug.Log($"[CombatManager] {origin} DamageBreakdown: {breakdown}");
 
-        // 1) 단일 타겟(선택된 적) 대미지 적용
+        // 1) 그리드 팝업 스폰 (프리팹이 알아서 애니메이션 재생)
+        TrySpawnGridPopups(result, settings);
+
+        // 2) 애니메이션 완료 대기 (하이브리드)
+        float startTime = Time.time;
+        // TODO: 팝업 완료 추적을 위해 팝업에서 완료 이벤트를 발행하면 더 정확함
+        // 현재는 고정 시간 대기 사용
+
+        while (Time.time - startTime < lineClearAnimationMaxDuration)
+        {
+            if (Time.time - startTime >= lineClearAnimationMinDuration)
+            {
+                // 최소 시간 경과하면 종료
+                break;
+            }
+            yield return null;
+        }
+
+        // 3) 실제 데미지 적용
         if (breakdown.finalDamage > 0)
         {
             // 기록용: monster HP 변화 전/후 캡처
@@ -127,17 +214,14 @@ public class CombatManager : MonoBehaviour
             }
         }
 
-        // 2) 광역(AoE) 대미지 적용 (스태프 효과)
+        // 4) 광역(AoE) 대미지 적용 (스태프 효과)
         if (breakdown.aoeDamage > 0 && MonsterManager.Instance != null)
         {
             MonsterManager.Instance.ApplyAoEDamage(breakdown.aoeDamage);
             Debug.Log($"[CombatManager] Staff Effect: AoE {breakdown.aoeDamage} damage applied.");
         }
 
-        // 그리드 위치에 팝업 띄우기 (row/col 중심 및 폭탄 위치)
-        TrySpawnGridPopups(result, settings);
-
-        // 기존 OnBombDefused 이벤트는 그대로 발행(후속 처리: 카드드로우 등)
+        // 5) 폭탄 해체 이벤트 발행(후속 처리: 카드드로우 등)
         int defusedBombs = (result.RemovedBombPositions != null) ? result.RemovedBombPositions.Count : 0;
         if (defusedBombs > 0)
         {
@@ -151,9 +235,10 @@ public class CombatManager : MonoBehaviour
             }
         }
 
+        // 6) 승패 체크
         CheckWinLose();
 
-        // 디버그/UI 구독자용 이벤트 (선택)
+        // 7) 완료 이벤트 (디버그/UI 구독자용)
         try { GameEvents.RaiseOnDamageCalculationResolved(breakdown, origin); } catch { }
     }
 
@@ -399,7 +484,13 @@ public class CombatManager : MonoBehaviour
             if (MonsterManager.Instance.AreAllMonstersDead())
             {
                 Debug.Log("[CombatManager] WIN: All monsters dead (MonsterManager)");
-                
+
+                // TurnManager에 게임 종료 통지
+                if (TurnManager.Instance != null)
+                {
+                    TurnManager.Instance.OnGameEnded();
+                }
+
                 if(GameFlowManager.Instance != null)
                 {
                     GameFlowManager.Instance.OnAllMonstersDefeated();
@@ -412,6 +503,12 @@ public class CombatManager : MonoBehaviour
             {
                 monsterHP = 0;
                 Debug.Log("[CombatManager] WIN: Monster HP <= 0");
+
+                // TurnManager에 게임 종료 통지
+                if (TurnManager.Instance != null)
+                {
+                    TurnManager.Instance.OnGameEnded();
+                }
                 // TODO: GameManager 승리 처리 호출
             }
         }
@@ -420,6 +517,12 @@ public class CombatManager : MonoBehaviour
         {
             playerHP = 0;
             Debug.Log("[CombatManager] LOSE: Player HP <= 0");
+
+            // TurnManager에 게임 종료 통지
+            if (TurnManager.Instance != null)
+            {
+                TurnManager.Instance.OnGameEnded();
+            }
             // TODO: GameManager 패배 처리 호출
         }
     }

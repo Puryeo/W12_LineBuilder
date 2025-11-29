@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -19,6 +20,15 @@ public interface IMonsterController
     /// <summary>턴이 진행될 때 호출할 것 — 내부 remainingTurns 감소 및 UI 업데이트</summary>
     void TickTurn();
 
-    /// <summary>즉시 패턴 실행(보통 remainingTurns<=0일 때 호출)</summary>
+    /// <summary>즉시 패턴 실행(보통 remainingTurns<=0일 때 호출) - 레거시, 동기 방식</summary>
     void ExecutePattern();
+
+    /// <summary>패턴 실행 준비가 되었는지 확인 (RemainingTurns <= 0 && 패턴 존재)</summary>
+    bool IsReadyToExecute();
+
+    /// <summary>패턴을 코루틴으로 실행 (애니메이션 대기 포함)</summary>
+    IEnumerator ExecutePatternRoutine();
+
+    /// <summary>몬스터가 죽었는지 확인</summary>
+    bool IsDead();
 }
