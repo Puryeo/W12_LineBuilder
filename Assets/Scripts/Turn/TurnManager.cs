@@ -315,10 +315,6 @@ public class TurnManager : MonoBehaviour
 
             Debug.Log($"[TurnManager] Turn {TurnCount} completed");
         }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[TurnManager] Turn execution failed: {ex}");
-        }
         finally
         {
             // 반드시 플래그 해제

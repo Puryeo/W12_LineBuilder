@@ -495,11 +495,6 @@ public class MonsterController : MonoBehaviour, IMonsterController
                 }
             }
         }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[MonsterController] Exception during ExecutePatternRoutine on {name}: {ex}");
-            CancelScheduledPattern();
-        }
         finally
         {
             _isExecuting = false;

@@ -121,10 +121,6 @@ public class CombatManager : MonoBehaviour
                 yield return StartCoroutine(ResolveLineClearRoutine(result));
             }
         }
-        catch (Exception ex)
-        {
-            Debug.LogError($"[CombatManager] Line clear queue processing failed: {ex}");
-        }
         finally
         {
             _isProcessingLineClear = false;
