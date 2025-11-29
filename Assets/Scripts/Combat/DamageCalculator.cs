@@ -18,7 +18,6 @@ public static class DamageCalculator
     {
         public int baseWeaponDamage = 10;
         public int sordBonusPerBlock = 1;
-        public int defuseDamagePerBomb = 30;
         public int lightningMultiplier = 2;
 
         public int staffAoEDamage = 10; // 스태프 라인당 광역 대미지
@@ -104,10 +103,6 @@ public static class DamageCalculator
         }
 
         d.attributeDamage = attrDamage;
-
-        int defused = (result.RemovedBombPositions != null) ? result.RemovedBombPositions.Count : 0;
-        d.defuseDamage = defused * Math.Max(0, settings.defuseDamagePerBomb);
-
         d.preLightningDamage = d.baseDamage + d.attributeDamage + d.defuseDamage;
         d.lightningApplied = lightning;
         d.finalDamage = d.preLightningDamage * (d.lightningApplied ? Math.Max(1, settings.lightningMultiplier) : 1);
