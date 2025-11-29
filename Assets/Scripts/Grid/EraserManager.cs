@@ -100,16 +100,15 @@ public class EraserManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Called from the pass button OnClick event.
-    /// Pass 버튼이 이제 턴 종료 역할을 하므로, eraser 충전도 턴 종료 시 발생합니다.
+    /// Called from the pass button OnClick event (in addition to whatever pass handling already exists).
+    /// This method strictly increments the eraser charge so the count only grows when pass is pressed.
     /// </summary>
     public void OnPassButtonClicked()
     {
         _eraserCount++;
         UpdateEraserUI();
         OnEraserCountChanged?.Invoke(_eraserCount);
-        Debug.Log($"[EraserManager] Pass clicked - eraser count increased to {_eraserCount}");
-        // eraser 모드는 자동으로 시작하지 않음 (플레이어가 버튼으로 활성화)
+        StartEraserMode();
     }
 
     /// <summary>
