@@ -93,26 +93,7 @@ public class InteractionManager : MonoBehaviour
                             bool used = CardManager.Instance.UseCardByReference(_selectedCard);
                             if (!used)
                             {
-                                // fallback: find index manually since IReadOnlyList doesn't provide IndexOf
-                                int fallbackIdx = -1;
-                                var hand = CardManager.Instance.GetHand();
-                                for (int k = 0; k < hand.Count; k++)
-                                {
-                                    if (hand[k] == _selectedCard)
-                                    {
-                                        fallbackIdx = k;
-                                        break;
-                                    }
-                                }
-
-                                if (fallbackIdx >= 0)
-                                {
-                                    CardManager.Instance.UseCardAt(fallbackIdx);
-                                }
-                                else
-                                {
-                                    Debug.LogWarning("[InteractionManager] Card placed but could not find card in hand to consume.");
-                                }
+                                Debug.LogWarning("[InteractionManager] Card placed but UseCardByReference failed - card may not be in hand.");
                             }
                         }
                     }
