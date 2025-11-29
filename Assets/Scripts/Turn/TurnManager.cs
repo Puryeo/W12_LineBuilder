@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -77,22 +77,22 @@ public class TurnManager : MonoBehaviour
 
         if (totalLines == 0) return;
 
-        // 보너스 드로우
-        if (CardManager.Instance != null)
-        {
-            if (result.ContainedBomb)
-            {
-                // 폭탄 포함 라인 완성: 2장 드로우
-                Debug.Log($"[TurnManager] Bomb line cleared! Drawing 2 bonus cards. (Lines: {totalLines})");
-                CardManager.Instance.DrawBonusForBombLine();
-            }
-            else
-            {
-                // 일반 라인 완성: 1장 드로우
-                Debug.Log($"[TurnManager] Normal line cleared! Drawing 1 bonus card. (Lines: {totalLines})");
-                CardManager.Instance.DrawBonusForNormalLine();
-            }
-        }
+        //// 보너스 드로우
+        //if (CardManager.Instance != null)
+        //{
+        //    if (result.ContainedBomb)
+        //    {
+        //        // 폭탄 포함 라인 완성: 2장 드로우
+        //        Debug.Log($"[TurnManager] Bomb line cleared! Drawing 2 bonus cards. (Lines: {totalLines})");
+        //        CardManager.Instance.DrawBonusForBombLine();
+        //    }
+        //    else
+        //    {
+        //        // 일반 라인 완성: 1장 드로우
+        //        Debug.Log($"[TurnManager] Normal line cleared! Drawing 1 bonus card. (Lines: {totalLines})");
+        //        CardManager.Instance.DrawBonusForNormalLine();
+        //    }
+        //}
 
         // eraser 충전 부분 제거 (Pass 버튼으로만 충전)
         // if (EraserManager.Instance != null)
