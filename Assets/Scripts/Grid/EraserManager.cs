@@ -53,7 +53,6 @@ public class EraserManager : MonoBehaviour
         PreparePreviewCells();
         UpdateEraserUI();
 
-        // 기존: eraserModeIndicator?.SetActive(false);
         try
         {
             if (eraserModeIndicator != null)
@@ -61,8 +60,6 @@ public class EraserManager : MonoBehaviour
         }
         catch (UnassignedReferenceException)
         {
-            // Inspector에 할당된 오브젝트가 삭제되어 "unassigned" 상태일 때 예외 발생함.
-            // 안전하게 null로 정리하고 경고 로그를 남깁니다.
             eraserModeIndicator = null;
             Debug.LogWarning("[EraserManager] eraserModeIndicator reference is missing in Inspector. Cleared reference to avoid exception.");
         }
@@ -103,15 +100,16 @@ public class EraserManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Called from the pass button OnClick event (in addition to whatever pass handling already exists).
-    /// This method strictly increments the eraser charge so the count only grows when pass is pressed.
+    /// Called from the pass button OnClick event.
+    /// Pass 버튼이 이제 턴 종료 역할을 하므로, eraser 충전도 턴 종료 시 발생합니다.
     /// </summary>
     public void OnPassButtonClicked()
     {
         _eraserCount++;
         UpdateEraserUI();
         OnEraserCountChanged?.Invoke(_eraserCount);
-        StartEraserMode();
+        Debug.Log($"[EraserManager] Pass clicked - eraser count increased to {_eraserCount}");
+        // eraser 모드는 자동으로 시작하지 않음 (플레이어가 버튼으로 활성화)
     }
 
     /// <summary>
