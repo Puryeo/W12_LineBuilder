@@ -118,6 +118,7 @@ InitTestScene*.unity*
 /Assets/Plugins/CodeStage/
 /Assets/Plugins/CodeStage.meta
 /Assets/Plugins/Sirenix/
+<<<<<<<<< Temporary merge branch 1
 /Assets/Plugins/Sirenix.meta
 /Assets/Plugins.meta
 /Assets/Wingman
@@ -125,3 +126,6 @@ InitTestScene*.unity*
 /Assets/Resource/Sprite/CardFrame
 /Assets/Resource/Sprite/CardFrame.meta
 /.claude
+=========
+/Assets/Plugins/Sirenix.meta
+>>>>>>>>> Temporary merge branch 2
