@@ -70,25 +70,37 @@ public class TurnManager : MonoBehaviour
     /// </summary>
     private void HandleLinesCleared(GridManager.LineClearResult result)
     {
-        if (CardManager.Instance == null || result == null) return;
+        if (result == null) return;
 
         // 총 클리어된 라인 수 계산
         int totalLines = result.ClearedRows.Count + result.ClearedCols.Count;
 
-        if (result.ContainedBomb)
-        {
-            // 폭탄 포함 라인 완성: 2장 드로우
-            Debug.Log($"[TurnManager] Bomb line cleared! Drawing 2 bonus cards. (Lines: {totalLines})");
-            CardManager.Instance.DrawBonusForBombLine();
-        }
-        else if (totalLines > 0)
-        {
-            // 일반 라인 완성: 1장 드로우
-            Debug.Log($"[TurnManager] Normal line cleared! Drawing 1 bonus card. (Lines: {totalLines})");
-            CardManager.Instance.DrawBonusForNormalLine();
-        }
-    }
+        if (totalLines == 0) return;
 
+        // 보너스 드로우
+        if (CardManager.Instance != null)
+        {
+            if (result.ContainedBomb)
+            {
+                // 폭탄 포함 라인 완성: 2장 드로우
+                Debug.Log($"[TurnManager] Bomb line cleared! Drawing 2 bonus cards. (Lines: {totalLines})");
+                CardManager.Instance.DrawBonusForBombLine();
+            }
+            else
+            {
+                // 일반 라인 완성: 1장 드로우
+                Debug.Log($"[TurnManager] Normal line cleared! Drawing 1 bonus card. (Lines: {totalLines})");
+                CardManager.Instance.DrawBonusForNormalLine();
+            }
+        }
+
+        // eraser 충전 부분 제거 (Pass 버튼으로만 충전)
+        // if (EraserManager.Instance != null)
+        // {
+        //     EraserManager.Instance.AddEraserCharge(totalLines);
+        //     Debug.Log($"[TurnManager] Added {totalLines} eraser charge(s) for line clear");
+        // }
+    }
     /// <summary>
     /// 손패가 비었을 때 자동으로 호출: 자동 턴 종료
     /// </summary>
@@ -97,12 +109,10 @@ public class TurnManager : MonoBehaviour
         Debug.Log("[TurnManager] Hand is empty - automatically ending turn");
 
         // 손패 전체 버림 및 새 손패 드로우
-        if (CardManager.Instance != null)
+        /*if (CardManager.Instance != null)
         {
             CardManager.Instance.EndTurnDiscardAndDraw();
-        }
-
-        AdvanceTurn();
+        }*/
     }
 
     /// <summary>

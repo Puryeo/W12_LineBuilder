@@ -66,6 +66,27 @@ public class CardManager : MonoBehaviour
     public IReadOnlyList<BlockSO> GetDiscard() => _discard.AsReadOnly();
 
     /// <summary>
+    /// [추가] 라운드가 바뀔 때 강제로 손패를 초기화하고 새로 드로우하는 함수
+    /// </summary>
+    public void ResetHandForNextRound()
+    {
+        // 1. 현재 손패에 있는 모든 카드를 버린 카드 더미(_discard)로 이동
+        if (_hand.Count > 0)
+        {
+            _discard.AddRange(_hand);
+            _hand.Clear();
+        }
+
+        // 2. UI 갱신 (빈 손패 상태 알림)
+        NotifyHandChanged();
+
+        // 3. 기본 핸드 크기(3장)만큼 새로 드로우
+        FillInitialHand();
+
+        Debug.Log("[CardManager] Hand reset for next round complete.");
+    }
+
+    /// <summary>
     /// 카드 참조로 사용: 현재 손패에서 해당 카드 객체를 찾아 사용합니다.
     /// 카드를 discard로 보내고 손패에서 제거합니다 (드로우는 하지 않음)
     /// 손패가 비면 OnHandEmpty 이벤트를 발생시킵니다.
