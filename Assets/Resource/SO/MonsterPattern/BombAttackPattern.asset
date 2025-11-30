@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayName: 
   attackType: 0
-  delayTurns: 1
+  delayTurns: 2
   repeat: 0
   weight: 1
   attackIcon: {fileID: -1483665779731714255, guid: 1b6a3dce0cfbaea4f898564348f630ce, type: 3}
