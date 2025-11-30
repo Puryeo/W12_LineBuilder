@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -76,6 +77,7 @@ public class GameFlowManager : MonoBehaviour
 
     /// <summary>
     /// 첫 라운드 시작 시 자동으로 Row에 칼, Column에 방패를 장착합니다.
+    /// 인벤토리에서 아이템을 소모하여 장착합니다.
     /// </summary>
     private void AutoEquipInitialAttributes()
     {
@@ -92,19 +94,47 @@ public class GameFlowManager : MonoBehaviour
             return;
         }
 
-        // Row 슬롯에 칼(WoodSord) 장착
-        for (int i = 0; i < 8; i++)
+        // 인벤토리에서 칼/방패 아이템 찾아서 소모
+        if (inventoryUI != null)
         {
-            attributeMap.SetRow(i, AttributeType.WoodSord);
+            // Row 슬롯에 칼(WoodSord) 장착
+            for (int i = 0; i < 8; i++)
+            {
+                // 인벤토리에서 칼 아이템 찾기
+                var swordItem = inventoryUI.AllInventoryItem.FirstOrDefault(item => item.attributeType == AttributeType.WoodSord);
+                if (swordItem != null)
+                {
+                    attributeMap.SetRow(i, AttributeType.WoodSord);
+                    inventoryUI.RemoveItem(swordItem); // 인벤토리에서 제거
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameFlowManager] 인벤토리에 칼이 부족합니다. Row {i} 장착 실패.");
+                }
+            }
+
+            // Column 슬롯에 방패(WoodShield) 장착
+            for (int i = 0; i < 8; i++)
+            {
+                // 인벤토리에서 방패 아이템 찾기
+                var shieldItem = inventoryUI.AllInventoryItem.FirstOrDefault(item => item.attributeType == AttributeType.WoodShield);
+                if (shieldItem != null)
+                {
+                    attributeMap.SetCol(i, AttributeType.WoodShield);
+                    inventoryUI.RemoveItem(shieldItem); // 인벤토리에서 제거
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameFlowManager] 인벤토리에 방패가 부족합니다. Column {i} 장착 실패.");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[GameFlowManager] AttributeInventoryUI를 찾을 수 없습니다.");
         }
 
-        // Column 슬롯에 방패(WoodShield) 장착
-        for (int i = 0; i < 8; i++)
-        {
-            attributeMap.SetCol(i, AttributeType.WoodShield);
-        }
-
-        Debug.Log("[GameFlowManager] 첫 라운드 자동 장비 장착 완료: Row=칼, Column=방패");
+        Debug.Log("[GameFlowManager] 첫 라운드 자동 장비 장착 완료: Row=칼, Column=방패 (인벤토리에서 소모됨)");
 
         // 모든 GridHeaderSlotUI의 시각적 업데이트
         UpdateAllHeaderSlotVisuals();
