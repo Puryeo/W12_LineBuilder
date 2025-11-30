@@ -15926,6 +15926,7 @@ MonoBehaviour:
   monsterManager: {fileID: 796807203}
   inventoryUI: {fileID: 2110694718}
   currentState: 0
+  autoEquipFirstRound: 1
 --- !u!4 &1774762812
 Transform:
   m_ObjectHideFlags: 0
@@ -18088,6 +18089,7 @@ MonoBehaviour:
   previewCellTemplate: {fileID: 0}
   previewColor: {r: 1, g: 0.95686066, b: 0, a: 0.4}
   useGhostColorForPreview: 0
+  eraserUsesPerTurn: 3
   eraserCountText: {fileID: 1936974381}
   eraserModeIndicator: {fileID: 4985027369310644027, guid: 0a96822fa30630d47842e5a131bcd579, type: 3}
 --- !u!4 &1926932075
