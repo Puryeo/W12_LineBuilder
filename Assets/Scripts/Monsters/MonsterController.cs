@@ -37,6 +37,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
     private static readonly System.Random _rng = new System.Random();
 
     private bool _isDead = false;
+    private int _hpAtPatternStart = -1;
 
     private void Awake()
     {
@@ -44,7 +45,10 @@ public class MonsterController : MonoBehaviour, IMonsterController
         _ui = GetComponent<MonsterUI>();
 
         if (_monster != null)
+        {
             _monster.OnDied += OnMonsterDied;
+            _monster.OnHealthChanged += OnMonsterHealthChanged;
+        }
 
         if (patternElements != null && patternElements.Length > 0)
             _patterns.AddRange(patternElements);
@@ -64,6 +68,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
                     _currentElement = initial;
                     RemainingTurns = Math.Max(0, initial.pattern.delayTurns);
                     _ui?.BindPattern(CurrentPattern, RemainingTurns);
+                    UpdatePatternTracking(CurrentPattern);
                     Debug.Log($"[MonsterController] Initial auto-selected '{initial.pattern.displayName}' for {RemainingTurns} turns on {name}");
                 }
             }
@@ -81,7 +86,10 @@ public class MonsterController : MonoBehaviour, IMonsterController
     private void OnDisable()
     {
         if (_monster != null)
+        {
             _monster.OnDied -= OnMonsterDied;
+            _monster.OnHealthChanged -= OnMonsterHealthChanged;
+        }
 
         if (MonsterAttackManager.Instance != null)
             MonsterAttackManager.Instance.Unregister(this);
@@ -111,6 +119,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         _ui?.ClearPatternUI();
         _currentElement = null;
         RemainingTurns = 0;
+        _hpAtPatternStart = -1;
     }
 
     public void SchedulePattern(AttackPatternSO pattern)
@@ -128,6 +137,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         _currentElement = found;
         RemainingTurns = Math.Max(0, pattern.delayTurns);
         _ui?.BindPattern(CurrentPattern, RemainingTurns);
+        UpdatePatternTracking(CurrentPattern);
         Debug.Log($"[MonsterController] Scheduled '{pattern.displayName}' for {RemainingTurns} turns on {name}");
     }
 
@@ -135,6 +145,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
     {
         _currentElement = null;
         RemainingTurns = 0;
+        _hpAtPatternStart = -1;
         _ui?.ClearPatternUI();
     }
 
@@ -157,6 +168,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
                 _currentElement = sel;
                 RemainingTurns = Math.Max(0, sel.pattern.delayTurns);
                 _ui?.BindPattern(CurrentPattern, RemainingTurns);
+                UpdatePatternTracking(CurrentPattern);
                 Debug.Log($"[MonsterController] Auto-selected '{sel.pattern.displayName}' for {RemainingTurns} turns on {name}");
             }
             return;
@@ -217,6 +229,30 @@ public class MonsterController : MonoBehaviour, IMonsterController
                 }
                 else Debug.LogWarning("[MonsterController] Damage pattern cast failed.");
             }
+            else if (pat.attackType == AttackType.HeavyDamage)
+            {
+                var hp = pat as HeavyDamageAttackPatternSO;
+                if (hp != null)
+                {
+                    if (CombatManager.Instance != null)
+                    {
+                        CombatManager.Instance.ApplyPlayerDamage(hp.damage, $"{name}_HeavyAttack");
+                        Debug.Log($"[MonsterController] Applied {hp.damage} heavy dmg to player via CombatManager.");
+                    }
+                    else Debug.Log($"[MonsterController] (No CombatManager) Simulated heavy damage: {hp.damage}");
+                }
+                else Debug.LogWarning("[MonsterController] Heavy damage pattern cast failed.");
+            }
+            else if (pat.attackType == AttackType.Groggy)
+            {
+                var gp = pat as GroggyAttackPatternSO;
+                var desc = gp != null ? gp.description : string.Empty;
+                Debug.Log($"[MonsterController] {name} is groggy. Skipping turn. {desc}");
+            }
+            else
+            {
+                Debug.LogWarning($"[MonsterController] Unknown attack type '{pat.attackType}' on {name}.");
+            }
         }
         catch (Exception ex)
         {
@@ -228,6 +264,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         {
             RemainingTurns = Math.Max(0, _currentElement.pattern.delayTurns);
             _ui?.UpdatePatternTurns(RemainingTurns);
+            UpdatePatternTracking(CurrentPattern);
             Debug.Log($"[MonsterController] Pattern '{_currentElement.pattern.displayName}' repeat scheduled on {name} for {RemainingTurns} turns.");
             // _currentElement remains the same
         }
@@ -241,6 +278,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
                 _currentElement = next;
                 RemainingTurns = Math.Max(0, next.pattern.delayTurns);
                 _ui?.BindPattern(CurrentPattern, RemainingTurns);
+                UpdatePatternTracking(CurrentPattern);
                 Debug.Log($"[MonsterController] After execute, immediately selected next '{next.pattern.displayName}' for {RemainingTurns} turns on {name}");
             }
             else
@@ -249,6 +287,51 @@ public class MonsterController : MonoBehaviour, IMonsterController
                 CancelScheduledPattern();
             }
         }
+    }
+
+    private void OnMonsterHealthChanged(int current, int max)
+    {
+        if (_isDead) return;
+        if (_currentElement == null || _currentElement.pattern == null) return;
+        if (!(_currentElement.pattern is HeavyDamageAttackPatternSO heavyPattern)) return;
+        if (RemainingTurns <= 0) return;
+
+        if (_hpAtPatternStart < 0)
+            _hpAtPatternStart = current;
+
+        int loss = _hpAtPatternStart - current;
+        if (loss >= heavyPattern.cancelThreshold)
+            TriggerGroggyState(heavyPattern, loss);
+    }
+
+    private void TriggerGroggyState(HeavyDamageAttackPatternSO heavyPattern, int hpLoss)
+    {
+        Debug.Log($"[MonsterController] Heavy attack '{heavyPattern.displayName}' cancelled on {name} (HP loss {hpLoss}/{heavyPattern.cancelThreshold}).");
+        _hpAtPatternStart = -1;
+
+        var groggy = heavyPattern.groggyPattern;
+        if (groggy == null)
+        {
+            Debug.LogWarning($"[MonsterController] Groggy pattern not assigned for '{heavyPattern.displayName}'. Cancelling pattern only.", this);
+            CancelScheduledPattern();
+            return;
+        }
+
+        SchedulePattern(groggy);
+    }
+
+    private void UpdatePatternTracking(AttackPatternSO pattern)
+    {
+        if (_monster == null || pattern == null)
+        {
+            _hpAtPatternStart = -1;
+            return;
+        }
+
+        if (pattern is HeavyDamageAttackPatternSO)
+            _hpAtPatternStart = _monster.currentHP;
+        else
+            _hpAtPatternStart = -1;
     }
 
     private PatternElement SelectNextPattern()

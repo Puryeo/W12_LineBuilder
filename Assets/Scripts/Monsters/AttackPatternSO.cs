@@ -3,7 +3,9 @@ using UnityEngine;
 public enum AttackType
 {
     Bomb,
-    Damage
+    Damage,
+    HeavyDamage,
+    Groggy
 }
 
 /// <summary>
