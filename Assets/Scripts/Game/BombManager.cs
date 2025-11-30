@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
@@ -219,6 +219,37 @@ public class BombManager : MonoBehaviour
         return false;
     }
 
+    /// <summary>
+    /// 그리드 회전 시 폭탄의 위치를 업데이트합니다.
+    /// oldPos에 있던 폭탄을 찾아서 newPos로 gridPos만 변경합니다.
+    /// GameObject의 transform은 GridManager가 관리하므로 여기서는 논리적 위치만 갱신.
+    /// </summary>
+    public bool UpdateBombPosition(Vector2Int oldPos, Vector2Int newPos)
+    {
+        for (int i = 0; i < _bombs.Count; i++)
+        {
+            var b = _bombs[i];
+            if (b == null) continue;
+
+            // oldPos에 있는 그리드 폭탄을 찾음
+            if (b.isGridBomb && b.gridPos == oldPos)
+            {
+                // 논리적 위치만 업데이트 (GameObject 이름도 변경)
+                b.gridPos = newPos;
+                if (b.gameObject != null)
+                {
+                    b.gameObject.name = $"Bomb_{newPos.x}_{newPos.y}";
+                }
+
+                Debug.Log($"[BombManager] UpdateBombPosition: {oldPos} -> {newPos} for Bomb[{b.bombId}]");
+                return true;
+            }
+        }
+
+        Debug.LogWarning($"[BombManager] UpdateBombPosition: No bomb found at {oldPos}");
+        return false;
+    }
+
     #region On-demand spawn API (몬스터/기타에서 호출)
     /// <summary>
     /// 빈 그리드 셀 중 랜덤 위치에 폭탄을 생성하고 생성 위치를 반환.
@@ -289,7 +320,7 @@ public class BombManager : MonoBehaviour
                     if (!Application.isPlaying) DestroyImmediate(b.gameObject);
                     else
 #endif
-                    Destroy(b.gameObject);
+                        Destroy(b.gameObject);
                 }
             }
         }
