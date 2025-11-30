@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 몬스터 프리팹에 붙여 패턴을 관리하는 컴포넌트(프리팹 우선).
-/// - PatternElement[] 을 인스펙터에서 설정 (weight 필드는 반드시 프리팹 컴포넌트에 존재)
-/// - MonsterAttackManager에 등록되어 TurnManager 흐름에서 TickTurn() 호출됨
+/// 몬스???�리?�에 붙여 ?�턴??관리하??컴포?�트(?�리???�선).
+/// - PatternElement[] ???�스?�터?�서 ?�정 (weight ?�드??반드???�리??컴포?�트??존재)
+/// - MonsterAttackManager???�록?�어 TurnManager ?�름?�서 TickTurn() ?�출??
 /// </summary>
 [DisallowMultipleComponent]
 public class MonsterController : MonoBehaviour, IMonsterController
@@ -13,17 +13,17 @@ public class MonsterController : MonoBehaviour, IMonsterController
     [Serializable]
     public class PatternElement
     {
-        [Tooltip("실제 패턴 SO")]
+        [Tooltip("?�제 ?�턴 SO")]
         public AttackPatternSO pattern;
 
-        [Tooltip("선택 비중 (>=0). 디자이너가 프리팹에서 설정하세요.")]
+        [Tooltip("?�택 비중 (>=0). ?�자?�너가 ?�리?�에???�정?�세??")]
         public int weight = 1;
 
-        [Tooltip("실행 후 동일 패턴을 자동 재스케줄할지")]
+        [Tooltip("?�행 ???�일 ?�턴???�동 ?�스케줄할지")]
         public bool repeat = false;
     }
 
-    [Header("패턴 풀 (프리팹에서 설정)")]
+    [Header("?�턴 ?� (?�리?�에???�정)")]
     public PatternElement[] patternElements;
 
     private readonly List<PatternElement> _patterns = new List<PatternElement>();
@@ -61,7 +61,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         if (patternElements != null && patternElements.Length > 0)
             _patterns.AddRange(patternElements);
 
-        // 초기 자동 선택: 프리팹 스폰 직후 UI에 다음 패턴을 표시하기 위함
+        // 초기 ?�동 ?�택: ?�리???�폰 직후 UI???�음 ?�턴???�시?�기 ?�함
         if (_patterns.Count > 0)
         {
             var initial = SelectNextPattern();
@@ -105,7 +105,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
 
     private void OnMonsterDied(Monster m)
     {
-        // 즉시 패턴 정리 및 Tick 중지
+        // 즉시 ?�턴 ?�리 �?Tick 중�?
         _isDead = true;
         CancelScheduledPattern();
         _ui?.ClearPatternUI();
@@ -114,7 +114,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
             MonsterAttackManager.Instance.Unregister(this);
     }
 
-    /// <summary>외부에서 런타임으로 패턴을 주입(프리팹 기본 덮어쓰지 않음 — 주입 시 기존 풀을 교체)</summary>
+    /// <summary>?��??�서 ?��??�으�??�턴??주입(?�리??기본 ??��?��? ?�음 ??주입 ??기존 ?�??교체)</summary>
     public void SetPatternElements(PatternElement[] elements)
     {
         if (_isDead) return;
@@ -123,7 +123,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         if (elements != null && elements.Length > 0)
             _patterns.AddRange(elements);
         Debug.Log($"[MonsterController] SetPatternElements -> {_patterns.Count} patterns on {name}", this);
-        // UI 초기화
+        // UI 초기??
         _ui?.ClearPatternUI();
         _currentElement = null;
         RemainingTurns = 0;
@@ -165,7 +165,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
     {
         if (_isDead || (_monster != null && _monster.IsDead)) return;
 
-        // 현재 예약된 패턴이 없으면 풀에서 선택(독립시행, weight 기반)
+        // ?�재 ?�약???�턴???�으�??�?�서 ?�택(?�립?�행, weight 기반)
         if (_currentElement == null)
         {
             var sel = SelectNextPattern();
@@ -280,10 +280,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
             Debug.LogError($"[MonsterController] Exception during ExecutePattern: {ex}");
         }
 
-        if (pat.attackType == AttackType.DisableSlot)
-            RestoreDisabledSlots();
-
-        // post-execute: repeat이면 동일 패턴 재스케줄, 아니면 즉시 다음 패턴 선택하여 UI 바인딩(쉬는 구간 없이)
+        // post-execute: repeat?�면 ?�일 ?�턴 ?�스케�? ?�니�?즉시 ?�음 ?�턴 ?�택?�여 UI 바인???�는 구간 ?�이)
         if (_currentElement != null && _currentElement.repeat && !_isDead)
         {
             RemainingTurns = Math.Max(0, _currentElement.pattern.delayTurns);
@@ -295,7 +292,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         else
         {
             // 기존: CancelScheduledPattern() -> UI 공백 발생
-            // 변경: 즉시 다음 패턴을 선택하여 UI 표시
+            // 변�? 즉시 ?�음 ?�턴???�택?�여 UI ?�시
             var next = SelectNextPattern();
             if (next != null && next.pattern != null && !_isDead)
             {
@@ -307,7 +304,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
             }
             else
             {
-                // 선택할 패턴이 없으면 기존처럼 클리어
+                // ?�택???�턴???�으�?기존처럼 ?�리??
                 CancelScheduledPattern();
             }
         }
@@ -380,7 +377,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
 
             slot.SetAttribute(AttributeType.None);
             RecordDisabledSlot(slot, before);
-            slot.SetLocked(true);
+            slot.SetLocked(true, pattern.lockedSlotSprite);
             Debug.Log($"[MonsterController] DisableSlot removed {before} from {slot.axis} {slot.index}.");
         }
     }
@@ -460,7 +457,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
             return _patterns[idx];
         }
 
-        int r = _rng.Next(0, sum); // 정수 기반 샘플링
+        int r = _rng.Next(0, sum); // ?�수 기반 ?�플�?
         int acc = 0;
         for (int i = 0; i < _patterns.Count; i++)
         {
@@ -473,3 +470,4 @@ public class MonsterController : MonoBehaviour, IMonsterController
         return _patterns[_rng.Next(0, _patterns.Count)];
     }
 }
+

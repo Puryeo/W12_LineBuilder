@@ -16,6 +16,8 @@ public class DisableSlotAttackPatternSO : AttackPatternSO
 
     [Tooltip("Skip empty slots when choosing targets")]
     public bool requireOccupiedSlot = true;
+    [Tooltip("잠금 상태 UI로 보여줄 스프라이트 (비어 있으면 슬롯 기본값 사용)")]
+    public Sprite lockedSlotSprite;
 
     public DisableSlotAttackPatternSO()
     {

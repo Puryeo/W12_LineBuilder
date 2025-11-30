@@ -41,6 +41,7 @@ public class GridHeaderSlotUI : MonoBehaviour,
     public static GridHeaderSlotUI draggedSlot;
 
     private bool _isLocked;
+    private Sprite _lockOverrideSprite;
     public bool IsLocked => _isLocked;
 
     private void Start()
@@ -60,9 +61,14 @@ public class GridHeaderSlotUI : MonoBehaviour,
         UpdateVisual();
     }
 
-    public void SetLocked(bool locked)
+    public void SetLocked(bool locked, Sprite overrideSprite = null)
     {
         _isLocked = locked;
+        if (locked)
+            _lockOverrideSprite = overrideSprite ?? _lockOverrideSprite;
+        else
+            _lockOverrideSprite = null;
+        Debug.Log($"[GridHeaderSlotUI] SetLocked -> locked={locked} overrideSprite={(_lockOverrideSprite != null ? _lockOverrideSprite.name : "null")} baseSprite={(lockedSprite != null ? lockedSprite.name : "null")} (slot {axis} {index})", this);
         UpdateVisual();
     }
 
@@ -175,8 +181,9 @@ public class GridHeaderSlotUI : MonoBehaviour,
 
         if (_isLocked)
         {
-            slotIcon.sprite = lockedSprite;
-            slotIcon.color = lockedSprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
+            var lockSprite = GetLockedSprite();
+            slotIcon.sprite = lockSprite;
+            slotIcon.color = lockSprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
             return;
         }
 
@@ -239,4 +246,6 @@ public class GridHeaderSlotUI : MonoBehaviour,
         else
             Destroy(targetItem);
     }
+
+    private Sprite GetLockedSprite() => _lockOverrideSprite ?? lockedSprite;
 }

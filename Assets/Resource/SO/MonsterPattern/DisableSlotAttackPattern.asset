@@ -22,3 +22,4 @@ MonoBehaviour:
   includeRows: 1
   includeColumns: 1
   requireOccupiedSlot: 1
+  lockedSlotSprite: {fileID: -5620155193319629329, guid: 9d3e86785c7444b4ab881cb8951e1819, type: 3}
