@@ -13,6 +13,7 @@ public class TestPatternRunner : MonoBehaviour
     public AttackPatternSO damagePatternAsset;
     public AttackPatternSO heavyPatternAsset;
     public AttackPatternSO groggyPatternAsset;
+    public AttackPatternSO disableSlotPatternAsset;
 
     [Header("Grid / spawn helpers (테스트용)")]
     [Tooltip("SpecificCell 또는 AroundMonster 모드 테스트 시 사용할 몬스터 그리드 위치")]
@@ -74,6 +75,18 @@ public class TestPatternRunner : MonoBehaviour
             (h as HeavyDamageAttackPatternSO).cancelThreshold = 10;
             (h as HeavyDamageAttackPatternSO).groggyPattern = groggyPatternAsset;
             heavyPatternAsset = h;
+        }
+
+        if (disableSlotPatternAsset == null)
+        {
+            var s = ScriptableObject.CreateInstance<DisableSlotAttackPatternSO>();
+            s.displayName = "Test Disable Slot";
+            s.attackType = AttackType.DisableSlot;
+            s.slotsToDisable = 1;
+            s.includeRows = true;
+            s.includeColumns = true;
+            s.requireOccupiedSlot = true;
+            disableSlotPatternAsset = s;
         }
     }
 
@@ -219,6 +232,19 @@ public class TestPatternRunner : MonoBehaviour
             return;
         }
 
+        if (pattern.attackType == AttackType.DisableSlot)
+        {
+            var sp = pattern as DisableSlotAttackPatternSO;
+            if (sp == null)
+            {
+                Debug.LogWarning("[TestPatternRunner] Pattern is DisableSlot type but cast failed.");
+                return;
+            }
+
+            Debug.Log($"[TestPatternRunner] DisableSlot pattern triggered: {sp.displayName}");
+            return;
+        }
+
         Debug.LogWarning("[TestPatternRunner] Unknown pattern type.");
     }
 
@@ -242,4 +268,7 @@ public class TestPatternRunner : MonoBehaviour
 
     [ContextMenu("Schedule sample Groggy pattern")]
     private void ContextScheduleGroggy() => SchedulePattern(groggyPatternAsset);
+
+    [ContextMenu("Schedule sample DisableSlot pattern")]
+    private void ContextScheduleDisableSlot() => SchedulePattern(disableSlotPatternAsset);
 }

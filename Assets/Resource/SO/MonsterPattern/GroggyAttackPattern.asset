@@ -17,5 +17,5 @@ MonoBehaviour:
   delayTurns: 1
   repeat: 0
   weight: 1
-  attackIcon: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
+  attackIcon: {fileID: -8332125718833699075, guid: 54868527ab8c0f04b9a7917cceab9eaa, type: 3}
   description: 

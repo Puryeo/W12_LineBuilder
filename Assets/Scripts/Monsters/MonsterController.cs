@@ -35,6 +35,14 @@ public class MonsterController : MonoBehaviour, IMonsterController
     private Monster _monster;
     private MonsterUI _ui;
     private static readonly System.Random _rng = new System.Random();
+    private static readonly List<GridHeaderSlotUI> _slotSelectionBuffer = new List<GridHeaderSlotUI>(16);
+
+    private struct DisabledSlotSnapshot
+    {
+        public GridHeaderSlotUI slot;
+        public AttributeType previousAttribute;
+    }
+    private readonly List<DisabledSlotSnapshot> _disabledSlotSnapshots = new List<DisabledSlotSnapshot>(8);
 
     private bool _isDead = false;
     private int _hpAtPatternStart = -1;
@@ -120,12 +128,15 @@ public class MonsterController : MonoBehaviour, IMonsterController
         _currentElement = null;
         RemainingTurns = 0;
         _hpAtPatternStart = -1;
+        RestoreDisabledSlots();
     }
 
     public void SchedulePattern(AttackPatternSO pattern)
     {
         if (_isDead) return;
         if (pattern == null) return;
+
+        RestoreDisabledSlots();
 
         PatternElement found = null;
         foreach (var p in _patterns)
@@ -147,6 +158,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         RemainingTurns = 0;
         _hpAtPatternStart = -1;
         _ui?.ClearPatternUI();
+        RestoreDisabledSlots();
     }
 
     public void TickTurn()
@@ -249,6 +261,15 @@ public class MonsterController : MonoBehaviour, IMonsterController
                 var desc = gp != null ? gp.description : string.Empty;
                 Debug.Log($"[MonsterController] {name} is groggy. Skipping turn. {desc}");
             }
+            else if (pat.attackType == AttackType.DisableSlot)
+            {
+                var sp = pat as DisableSlotAttackPatternSO;
+                if (sp != null)
+                {
+                    ExecuteDisableSlotPattern(sp);
+                }
+                else Debug.LogWarning("[MonsterController] DisableSlot pattern cast failed.");
+            }
             else
             {
                 Debug.LogWarning($"[MonsterController] Unknown attack type '{pat.attackType}' on {name}.");
@@ -258,6 +279,9 @@ public class MonsterController : MonoBehaviour, IMonsterController
         {
             Debug.LogError($"[MonsterController] Exception during ExecutePattern: {ex}");
         }
+
+        if (pat.attackType == AttackType.DisableSlot)
+            RestoreDisabledSlots();
 
         // post-execute: repeat이면 동일 패턴 재스케줄, 아니면 즉시 다음 패턴 선택하여 UI 바인딩(쉬는 구간 없이)
         if (_currentElement != null && _currentElement.repeat && !_isDead)
@@ -332,6 +356,93 @@ public class MonsterController : MonoBehaviour, IMonsterController
             _hpAtPatternStart = _monster.currentHP;
         else
             _hpAtPatternStart = -1;
+    }
+
+    private void ExecuteDisableSlotPattern(DisableSlotAttackPatternSO pattern)
+    {
+        var candidates = GatherSlotCandidates(pattern);
+        if (candidates.Count == 0)
+        {
+            Debug.LogWarning($"[MonsterController] DisableSlot pattern '{pattern.displayName}' had no valid targets.", this);
+            return;
+        }
+
+        int iterations = Mathf.Clamp(pattern.slotsToDisable, 1, candidates.Count);
+        for (int i = 0; i < iterations; i++)
+        {
+            if (candidates.Count == 0) break;
+            int idx = _rng.Next(0, candidates.Count);
+            var slot = candidates[idx];
+            candidates.RemoveAt(idx);
+            if (slot == null) continue;
+
+            var before = slot.GetCurrentAttribute();
+
+            slot.SetAttribute(AttributeType.None);
+            RecordDisabledSlot(slot, before);
+            slot.SetLocked(true);
+            Debug.Log($"[MonsterController] DisableSlot removed {before} from {slot.axis} {slot.index}.");
+        }
+    }
+
+    private List<GridHeaderSlotUI> GatherSlotCandidates(DisableSlotAttackPatternSO pattern)
+    {
+        _slotSelectionBuffer.Clear();
+
+        if (pattern.includeRows)
+            AppendSlots(_slotSelectionBuffer, AttributeInventoryUI.AllRowSlots, pattern.requireOccupiedSlot);
+        if (pattern.includeColumns)
+            AppendSlots(_slotSelectionBuffer, AttributeInventoryUI.AllColumnSlots, pattern.requireOccupiedSlot);
+
+        if (_slotSelectionBuffer.Count == 0)
+        {
+            var fallback = UnityEngine.Object.FindObjectsByType<GridHeaderSlotUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            foreach (var slot in fallback)
+            {
+                if (slot == null) continue;
+                if (slot.axis == GridHeaderSlotUI.Axis.Row && !pattern.includeRows) continue;
+                if (slot.axis == GridHeaderSlotUI.Axis.Col && !pattern.includeColumns) continue;
+                if (pattern.requireOccupiedSlot && slot.GetCurrentAttribute() == AttributeType.None) continue;
+                _slotSelectionBuffer.Add(slot);
+            }
+        }
+
+        return _slotSelectionBuffer;
+    }
+
+    private void AppendSlots(List<GridHeaderSlotUI> dest, List<GridHeaderSlotUI> source, bool requireOccupied)
+    {
+        if (source == null) return;
+        foreach (var slot in source)
+        {
+            if (slot == null) continue;
+            if (requireOccupied && slot.GetCurrentAttribute() == AttributeType.None) continue;
+            dest.Add(slot);
+        }
+    }
+
+    private void RecordDisabledSlot(GridHeaderSlotUI slot, AttributeType previous)
+    {
+        if (slot == null) return;
+        if (_disabledSlotSnapshots.Exists(s => s.slot == slot)) return;
+        _disabledSlotSnapshots.Add(new DisabledSlotSnapshot { slot = slot, previousAttribute = previous });
+    }
+
+    private void RestoreDisabledSlots()
+    {
+        if (_disabledSlotSnapshots.Count == 0) return;
+
+        foreach (var snapshot in _disabledSlotSnapshots)
+        {
+            if (snapshot.slot == null) continue;
+            var slot = snapshot.slot;
+
+            slot.SetLocked(false);
+
+            if (snapshot.previousAttribute != AttributeType.None && slot.GetCurrentAttribute() == AttributeType.None)
+                slot.SetAttribute(snapshot.previousAttribute);
+        }
+        _disabledSlotSnapshots.Clear();
     }
 
     private PatternElement SelectNextPattern()

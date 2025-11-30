@@ -5,7 +5,8 @@ public enum AttackType
     Bomb,
     Damage,
     HeavyDamage,
-    Groggy
+    Groggy,
+    DisableSlot
 }
 
 /// <summary>
