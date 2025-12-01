@@ -22,7 +22,7 @@ public class GridHeaderSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, 
     public Sprite woodSordSprite;
     public Sprite woodShieldSprite;
     public Sprite staff;
-    public Sprite hammer;
+    public Sprite bratCandy;
     public Sprite cross;
 
     private GridAttributeMap _attributeMap;
@@ -70,6 +70,12 @@ public class GridHeaderSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, 
         }
 
         UpdateVisual();
+
+        GridLineRenderer lineRenderer = FindAnyObjectByType<GridLineRenderer>();
+        if (lineRenderer != null)
+        {
+            lineRenderer.RefreshGridLines();
+        }
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -204,8 +210,8 @@ public class GridHeaderSlotUI : MonoBehaviour, IDropHandler, IBeginDragHandler, 
                 case AttributeType.Staff:
                     slotIcon.sprite = staff;
                     break;
-                case AttributeType.Hammer:
-                    slotIcon.sprite = hammer;
+                case AttributeType.BratCandy:
+                    slotIcon.sprite = bratCandy;
                     break;
                 case AttributeType.Cross:
                     slotIcon.sprite = cross;

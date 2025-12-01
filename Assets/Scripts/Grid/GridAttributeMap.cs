@@ -10,9 +10,9 @@ public enum AttributeType
     None,
     WoodSord,
     WoodShield,
-    Hammer,
     Staff,
-    Cross
+    Cross,
+    BratCandy,
 }
 
 [DisallowMultipleComponent]

@@ -12,7 +12,7 @@ public class AttributeInventoryUI : MonoBehaviour, IDropHandler
     public Sprite woodSord;
     public Sprite woodShield;
     public Sprite staff;
-    public Sprite hammer;
+    public Sprite bratCandy;
     public Sprite cross;
 
     public List<InventoryItemUI> AllInventoryItem = new();
@@ -68,7 +68,7 @@ public class AttributeInventoryUI : MonoBehaviour, IDropHandler
             case AttributeType.WoodSord: s = woodSord; break;
             case AttributeType.WoodShield: s = woodShield; break;
             case AttributeType.Staff: s = staff; break;
-            case AttributeType.Hammer: s = hammer; break;
+            case AttributeType.BratCandy: s = bratCandy; break;
             case AttributeType.Cross: s = cross; break;
         }
 

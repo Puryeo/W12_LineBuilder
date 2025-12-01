@@ -8,11 +8,13 @@ public class AttributeEffectManager : MonoBehaviour
     [Tooltip("GridManager에 부착해서 사용하세요.")]
     public GridManager gridManager;
 
-    [Header("Shield / Shield Settings")]
+    [Header("Settings")]
     [Tooltip("쉴드 라인 1개당 지급할 실드량")]
     public int shieldPerLine = 2;
     [Tooltip("쉴드 라인 트리거당 폭탄 타이머 연기를 수행할지 (true = 라인당 ApplyShield 호출)")]
     public bool applyShieldPerLine = true;
+    [Tooltip("십자가(Cross) 라인 1개당 회복할 체력량")]
+    public int healPerCrossLine = 10;
 
     private GridAttributeMap _attrMap;
     private GridManager _grid;
@@ -117,7 +119,7 @@ public class AttributeEffectManager : MonoBehaviour
         // 십자가(Cross) 회복 효과 적용
         if (crossLineCount > 0)
         {
-            int healAmount = crossLineCount * 5; // 라인당 5 회복
+            int healAmount = crossLineCount * healPerCrossLine; // 라인당 healPerCrossLine 만큼 회복
             if (CombatManager.Instance != null)
             {
                 CombatManager.Instance.HealPlayer(healAmount, origin);

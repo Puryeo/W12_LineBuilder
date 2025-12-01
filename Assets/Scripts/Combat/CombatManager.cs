@@ -82,7 +82,7 @@ public class CombatManager : MonoBehaviour
             sordBonusPerBlock = sordBonusPerBlock,
             lightningMultiplier = 2,
             staffAoEDamage = 10,  //스태프
-            hammerMultiplier = 2 // 망치
+            crossDamage = 10 // 십자가
         };
 
         var breakdown = DamageCalculator.Calculate(result, _grid, _attrMap, settings);
@@ -135,7 +135,7 @@ public class CombatManager : MonoBehaviour
         }
 
         // 그리드 위치에 팝업 띄우기 (row/col 중심 및 폭탄 위치)
-        TrySpawnGridPopups(result, settings);
+        TrySpawnGridPopups(result, breakdown);
 
         // 기존 OnBombDefused 이벤트는 그대로 발행(후속 처리: 카드드로우 등)
         int defusedBombs = (result.RemovedBombPositions != null) ? result.RemovedBombPositions.Count : 0;
@@ -170,7 +170,7 @@ public class CombatManager : MonoBehaviour
     }
 
     // 그리드 팝업 생성 로직: 각 행/열 중앙 및 폭탄 위치에 해당 구성요소 데미지 표시
-    private void TrySpawnGridPopups(GridManager.LineClearResult result, DamageCalculator.Settings settings)
+    private void TrySpawnGridPopups(GridManager.LineClearResult result, DamageBreakdown settings)
     {
         if (_grid == null) return;
         if (gridDamagePopupPrefab == null) return;
@@ -182,35 +182,9 @@ public class CombatManager : MonoBehaviour
             foreach (var y in result.ClearedRows)
             {
                 if (y < 0 || y >= _grid.height) continue;
-                int dmg = settings.baseWeaponDamage;
+                int dmg = settings.attributeDamage;
 
-                // WoodSord 보너스
-                if (_attrMap != null && _attrMap.GetRow(y) == AttributeType.WoodSord)
-                    dmg += width * Math.Max(0, settings.sordBonusPerBlock);
-
-                // [수정됨] Hammer 보너스: 해당 줄에 폭탄이 있었을 경우에만 배율 적용
-                if (_attrMap != null && _attrMap.GetRow(y) == AttributeType.Hammer)
-                {
-                    bool hasBombInRow = false;
-                    if (result.RemovedBombPositions != null)
-                    {
-                        foreach (var bombPos in result.RemovedBombPositions)
-                        {
-                            if (bombPos.y == y)
-                            {
-                                hasBombInRow = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (hasBombInRow)
-                    {
-                        dmg *= settings.hammerMultiplier;
-                    }
-                }
-
-                var center = new UnityEngine.Vector2Int(width / 2, y);
+                var center = new Vector2Int(width / 2, y);
                 var world = _grid.GridToWorld(center) + gridPopupOffset;
                 SpawnGridDamagePopup(world, dmg);
             }
@@ -223,36 +197,10 @@ public class CombatManager : MonoBehaviour
             foreach (var x in result.ClearedCols)
             {
                 if (x < 0 || x >= _grid.width) continue;
-                int dmg = settings.baseWeaponDamage;
+                int dmg = settings.attributeDamage;
 
-                // WoodSord 보너스
-                if (_attrMap != null && _attrMap.GetCol(x) == AttributeType.WoodSord)
-                    dmg += height * Math.Max(0, settings.sordBonusPerBlock);
 
-                // [수정됨] Hammer 보너스: 해당 줄에 폭탄이 있었을 경우에만 배율 적용
-                // (기존 코드의 GetRow(x) 오타도 GetCol(x)로 수정했습니다)
-                if (_attrMap != null && _attrMap.GetCol(x) == AttributeType.Hammer)
-                {
-                    bool hasBombInCol = false;
-                    if (result.RemovedBombPositions != null)
-                    {
-                        foreach (var bombPos in result.RemovedBombPositions)
-                        {
-                            if (bombPos.x == x)
-                            {
-                                hasBombInCol = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (hasBombInCol)
-                    {
-                        dmg *= settings.hammerMultiplier;
-                    }
-                }
-
-                var center = new UnityEngine.Vector2Int(x, height / 2);
+                var center = new Vector2Int(x, height / 2);
                 var world = _grid.GridToWorld(center) + gridPopupOffset;
                 SpawnGridDamagePopup(world, dmg);
             }
