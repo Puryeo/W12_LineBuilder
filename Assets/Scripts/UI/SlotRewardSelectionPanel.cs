@@ -117,6 +117,8 @@ public class SlotRewardSelectionPanel : MonoBehaviour
     {
         if (_selectedAttribute == AttributeType.None) return;
 
+        rewardAmount = 4;
+
         if (attributeInventoryUI != null)
         {
             if(_selectedAttribute == AttributeType.BratCandy)

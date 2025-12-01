@@ -131,11 +131,12 @@ public class CombatManager : MonoBehaviour
         if (breakdown.aoeDamage > 0 && MonsterManager.Instance != null)
         {
             MonsterManager.Instance.ApplyAoEDamage(breakdown.aoeDamage);
+            TrySpawnGridPopups(result, breakdown.aoeDamage);
             Debug.Log($"[CombatManager] Staff Effect: AoE {breakdown.aoeDamage} damage applied.");
         }
 
         // 그리드 위치에 팝업 띄우기 (row/col 중심 및 폭탄 위치)
-        TrySpawnGridPopups(result, breakdown);
+        TrySpawnGridPopups(result, breakdown.finalDamage);
 
         // 기존 OnBombDefused 이벤트는 그대로 발행(후속 처리: 카드드로우 등)
         int defusedBombs = (result.RemovedBombPositions != null) ? result.RemovedBombPositions.Count : 0;
@@ -170,7 +171,7 @@ public class CombatManager : MonoBehaviour
     }
 
     // 그리드 팝업 생성 로직: 각 행/열 중앙 및 폭탄 위치에 해당 구성요소 데미지 표시
-    private void TrySpawnGridPopups(GridManager.LineClearResult result, DamageBreakdown settings)
+    private void TrySpawnGridPopups(GridManager.LineClearResult result, int damage)
     {
         if (_grid == null) return;
         if (gridDamagePopupPrefab == null) return;
@@ -182,11 +183,10 @@ public class CombatManager : MonoBehaviour
             foreach (var y in result.ClearedRows)
             {
                 if (y < 0 || y >= _grid.height) continue;
-                int dmg = settings.attributeDamage;
 
                 var center = new Vector2Int(width / 2, y);
                 var world = _grid.GridToWorld(center) + gridPopupOffset;
-                SpawnGridDamagePopup(world, dmg);
+                SpawnGridDamagePopup(world, damage);
             }
         }
 
@@ -197,12 +197,10 @@ public class CombatManager : MonoBehaviour
             foreach (var x in result.ClearedCols)
             {
                 if (x < 0 || x >= _grid.width) continue;
-                int dmg = settings.attributeDamage;
-
 
                 var center = new Vector2Int(x, height / 2);
                 var world = _grid.GridToWorld(center) + gridPopupOffset;
-                SpawnGridDamagePopup(world, dmg);
+                SpawnGridDamagePopup(world, damage);
             }
         }
 

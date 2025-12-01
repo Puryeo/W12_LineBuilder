@@ -2044,6 +2044,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &156965966
 GameObject:
   m_ObjectHideFlags: 0
@@ -2294,6 +2295,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &163202787
 GameObject:
   m_ObjectHideFlags: 0
@@ -4195,6 +4197,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -5870,6 +5873,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &770383568
 GameObject:
   m_ObjectHideFlags: 0
@@ -7299,6 +7303,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &882573893
 GameObject:
   m_ObjectHideFlags: 0
@@ -7485,6 +7490,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &908171392
 GameObject:
   m_ObjectHideFlags: 0
@@ -8556,6 +8562,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1020157978
 GameObject:
   m_ObjectHideFlags: 0
@@ -9125,6 +9132,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1086566079
 GameObject:
   m_ObjectHideFlags: 0
@@ -11118,6 +11126,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1256053662
 GameObject:
   m_ObjectHideFlags: 0
@@ -11398,6 +11407,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1320724062
 GameObject:
   m_ObjectHideFlags: 0
@@ -11744,6 +11754,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1359378266
 GameObject:
   m_ObjectHideFlags: 0
@@ -13787,6 +13798,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1656007657
 GameObject:
   m_ObjectHideFlags: 0
@@ -14165,6 +14177,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1683927550
 GameObject:
   m_ObjectHideFlags: 0
@@ -16064,6 +16077,7 @@ GameObject:
   - component: {fileID: 1841732834}
   - component: {fileID: 1841732835}
   - component: {fileID: 1841732836}
+  - component: {fileID: 1841732837}
   m_Layer: 0
   m_Name: 'GridManager '
   m_TagString: Untagged
@@ -16146,6 +16160,9 @@ MonoBehaviour:
   fireScrollSpeed: {x: 0.05, y: 0}
   flickerIntensity: 0.05
   fireOffset: {x: 0, y: 0, z: 0}
+  enableQuadrantHighlight: 1
+  quadrantHighlightColor: {r: 1, g: 1, b: 0, a: 1}
+  quadrantHighlightWidth: 0.1
 --- !u!114 &1841732834
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16191,6 +16208,19 @@ MonoBehaviour:
   perTurnGainLimit: 20
   totalCap: 40
   defaultDurationTurns: 5
+--- !u!114 &1841732837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1841732830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90948daa11cb9504dbc7b42a1f76f17e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableRotation: 1
 --- !u!1 &1843987832
 GameObject:
   m_ObjectHideFlags: 0
@@ -17247,6 +17277,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1926932073
 GameObject:
   m_ObjectHideFlags: 0
@@ -18330,6 +18361,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &2052334623
 GameObject:
   m_ObjectHideFlags: 0
@@ -18562,6 +18594,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   bratCandy: {fileID: -3660703662136176839, guid: 2c98471dc99c73d429f47d479fee5ee6, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &2081500125
 GameObject:
   m_ObjectHideFlags: 0
