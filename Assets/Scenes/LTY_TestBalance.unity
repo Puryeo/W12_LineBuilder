@@ -2169,6 +2169,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &156965966
 GameObject:
   m_ObjectHideFlags: 0
@@ -2419,6 +2420,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &163202787
 GameObject:
   m_ObjectHideFlags: 0
@@ -4395,6 +4397,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -6220,6 +6223,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &770383568
 GameObject:
   m_ObjectHideFlags: 0
@@ -6608,8 +6612,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerMaxHP: 50
-  monsterMaxHP: 250
-  baseWeaponDamage: 5
+  monsterMaxHP: 50
+  baseWeaponDamage: 10
   bombExplosionPlayerDamage: 20
   sordBonusPerBlock: 1
   gridDamagePopupPrefab: {fileID: 8610739867175518237, guid: c83136a3fcba079459ced3e4f3a06910, type: 3}
@@ -7649,6 +7653,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &879862597
 GameObject:
   m_ObjectHideFlags: 0
@@ -7971,6 +7976,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &908171392
 GameObject:
   m_ObjectHideFlags: 0
@@ -9165,6 +9171,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1020157978
 GameObject:
   m_ObjectHideFlags: 0
@@ -9734,6 +9741,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1085107363
 GameObject:
   m_ObjectHideFlags: 0
@@ -11802,6 +11810,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1256053662
 GameObject:
   m_ObjectHideFlags: 0
@@ -12082,6 +12091,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1320724062
 GameObject:
   m_ObjectHideFlags: 0
@@ -12428,6 +12438,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1359378266
 GameObject:
   m_ObjectHideFlags: 0
@@ -14607,6 +14618,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1656007657
 GameObject:
   m_ObjectHideFlags: 0
@@ -14981,6 +14993,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1683927550
 GameObject:
   m_ObjectHideFlags: 0
@@ -15926,6 +15939,7 @@ MonoBehaviour:
   monsterManager: {fileID: 796807203}
   inventoryUI: {fileID: 2110694718}
   currentState: 0
+  autoEquipFirstRound: 1
 --- !u!4 &1774762812
 Transform:
   m_ObjectHideFlags: 0
@@ -18070,6 +18084,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1926932073
 GameObject:
   m_ObjectHideFlags: 0
@@ -19153,6 +19168,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &2052334623
 GameObject:
   m_ObjectHideFlags: 0
@@ -19385,6 +19401,7 @@ MonoBehaviour:
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
   hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &2081500125
 GameObject:
   m_ObjectHideFlags: 0
