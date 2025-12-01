@@ -11,6 +11,9 @@ public class TestPatternRunner : MonoBehaviour
     [Header("Optional: assign SO assets (if null, runtime-created samples will be used)")]
     public AttackPatternSO bombPatternAsset;
     public AttackPatternSO damagePatternAsset;
+    public AttackPatternSO heavyPatternAsset;
+    public AttackPatternSO groggyPatternAsset;
+    public AttackPatternSO disableSlotPatternAsset;
 
     [Header("Grid / spawn helpers (테스트용)")]
     [Tooltip("SpecificCell 또는 AroundMonster 모드 테스트 시 사용할 몬스터 그리드 위치")]
@@ -51,6 +54,39 @@ public class TestPatternRunner : MonoBehaviour
             (d as DamageAttackPatternSO).damage = 5;
             (d as DamageAttackPatternSO).affectsShield = false;
             damagePatternAsset = d;
+        }
+
+        if (groggyPatternAsset == null)
+        {
+            var g = ScriptableObject.CreateInstance<GroggyAttackPatternSO>();
+            g.displayName = "Test Groggy";
+            g.attackType = AttackType.Groggy;
+            g.delayTurns = 1;
+            groggyPatternAsset = g;
+        }
+
+        if (heavyPatternAsset == null)
+        {
+            var h = ScriptableObject.CreateInstance<HeavyDamageAttackPatternSO>();
+            h.displayName = "Test Heavy";
+            h.attackType = AttackType.HeavyDamage;
+            h.delayTurns = 2;
+            (h as HeavyDamageAttackPatternSO).damage = 15;
+            (h as HeavyDamageAttackPatternSO).cancelThreshold = 10;
+            (h as HeavyDamageAttackPatternSO).groggyPattern = groggyPatternAsset;
+            heavyPatternAsset = h;
+        }
+
+        if (disableSlotPatternAsset == null)
+        {
+            var s = ScriptableObject.CreateInstance<DisableSlotAttackPatternSO>();
+            s.displayName = "Test Disable Slot";
+            s.attackType = AttackType.DisableSlot;
+            s.slotsToDisable = 1;
+            s.includeRows = true;
+            s.includeColumns = true;
+            s.requireOccupiedSlot = true;
+            disableSlotPatternAsset = s;
         }
     }
 
@@ -167,6 +203,48 @@ public class TestPatternRunner : MonoBehaviour
             return;
         }
 
+        if (pattern.attackType == AttackType.HeavyDamage)
+        {
+            var hp = pattern as HeavyDamageAttackPatternSO;
+            if (hp == null)
+            {
+                Debug.LogWarning("[TestPatternRunner] Pattern is HeavyDamage type but cast failed.");
+                return;
+            }
+
+            if (CombatManager.Instance != null)
+            {
+                CombatManager.Instance.ApplyPlayerDamage(hp.damage);
+                Debug.Log($"[TestPatternRunner] Applied {hp.damage} heavy dmg to player via CombatManager.");
+            }
+            else
+            {
+                Debug.Log($"[TestPatternRunner] (No CombatManager) Simulated heavy damage: {hp.damage}");
+            }
+            return;
+        }
+
+        if (pattern.attackType == AttackType.Groggy)
+        {
+            var gp = pattern as GroggyAttackPatternSO;
+            var desc = gp != null ? gp.description : string.Empty;
+            Debug.Log($"[TestPatternRunner] Groggy pattern executed. (desc: {desc})");
+            return;
+        }
+
+        if (pattern.attackType == AttackType.DisableSlot)
+        {
+            var sp = pattern as DisableSlotAttackPatternSO;
+            if (sp == null)
+            {
+                Debug.LogWarning("[TestPatternRunner] Pattern is DisableSlot type but cast failed.");
+                return;
+            }
+
+            Debug.Log($"[TestPatternRunner] DisableSlot pattern triggered: {sp.displayName}");
+            return;
+        }
+
         Debug.LogWarning("[TestPatternRunner] Unknown pattern type.");
     }
 
@@ -184,4 +262,13 @@ public class TestPatternRunner : MonoBehaviour
 
     [ContextMenu("Schedule sample Damage pattern")]
     private void ContextScheduleDamage() => SchedulePattern(damagePatternAsset);
+
+    [ContextMenu("Schedule sample Heavy pattern")]
+    private void ContextScheduleHeavy() => SchedulePattern(heavyPatternAsset);
+
+    [ContextMenu("Schedule sample Groggy pattern")]
+    private void ContextScheduleGroggy() => SchedulePattern(groggyPatternAsset);
+
+    [ContextMenu("Schedule sample DisableSlot pattern")]
+    private void ContextScheduleDisableSlot() => SchedulePattern(disableSlotPatternAsset);
 }

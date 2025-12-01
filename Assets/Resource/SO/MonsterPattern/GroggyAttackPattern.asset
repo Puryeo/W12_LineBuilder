@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99dd84744a3e9f44391bdb706fadb552, type: 3}
+  m_Name: GroggyAttackPattern
+  m_EditorClassIdentifier: 
+  displayName: 
+  attackType: 3
+  delayTurns: 1
+  repeat: 0
+  weight: 1
+  attackIcon: {fileID: -8332125718833699075, guid: 54868527ab8c0f04b9a7917cceab9eaa, type: 3}
+  description: 

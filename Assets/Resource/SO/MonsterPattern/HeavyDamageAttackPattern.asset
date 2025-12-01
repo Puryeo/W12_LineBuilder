@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74bfb52e645930a49962ffb949df691d, type: 3}
+  m_Name: HeavyDamageAttackPattern
+  m_EditorClassIdentifier: 
+  displayName: 
+  attackType: 2
+  delayTurns: 2
+  repeat: 0
+  weight: 1
+  attackIcon: {fileID: -5825250732961213246, guid: d2ab442a35f2f6244ac369a3ecb63967, type: 3}
+  damage: 20
+  cancelThreshold: 20
+  groggyPattern: {fileID: 11400000, guid: dc4492991331cf74bb1e0aeeb81c2554, type: 2}
