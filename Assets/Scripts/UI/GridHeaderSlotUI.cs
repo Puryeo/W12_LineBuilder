@@ -49,13 +49,19 @@ public class GridHeaderSlotUI : MonoBehaviour,
         if (GridManager.Instance != null)
             _attributeMap = GridManager.Instance.GetComponent<GridAttributeMap>();
 
+        // AttributeInventoryUI 찾기 (더 안전한 방법 사용)
 #if UNITY_2023_1_OR_NEWER
         _inventoryUI = FindAnyObjectByType<AttributeInventoryUI>();
 #else
         _inventoryUI = FindObjectOfType<AttributeInventoryUI>();
 #endif
 
-        var canvas = GetComponentInParent<Canvas>();
+        if (_inventoryUI == null)
+        {
+            Debug.LogWarning($"[GridHeaderSlotUI] AttributeInventoryUI를 찾을 수 없습니다! (axis={axis}, index={index})");
+        }
+
+        Canvas canvas = GetComponentInParent<Canvas>();
         if (canvas != null) _canvasTransform = canvas.transform;
 
         UpdateVisual();
@@ -98,13 +104,35 @@ public class GridHeaderSlotUI : MonoBehaviour,
         if (GameFlowManager.Instance != null &&
             GameFlowManager.Instance.currentState != GameFlowManager.GameState.Preparation) return;
 
+        // 슬롯에 아이템이 있는지 확인
         var current = GetCurrentAttribute();
-        if (current == AttributeType.None) return;
+        if (current == AttributeType.None) return; // 빈 슬롯은 무시
 
+        Debug.Log($"[GridHeaderSlotUI] 우클릭 - 장비 해제 시도: {current} (axis={axis}, index={index})");
+
+        // 인벤토리 참조 재확인 (null이면 다시 찾기)
+        if (_inventoryUI == null)
+        {
+            _inventoryUI = FindAnyObjectByType<AttributeInventoryUI>();
+            Debug.LogWarning($"[GridHeaderSlotUI] _inventoryUI가 null이어서 재탐색 시도");
+        }
+
+        // 인벤토리로 반환 (장착 해제)
         if (_inventoryUI != null)
+        {
             _inventoryUI.CreateItem(current);
+            Debug.Log($"[GridHeaderSlotUI] 인벤토리에 아이템 추가 완료: {current}");
+        }
+        else
+        {
+            Debug.LogError("[GridHeaderSlotUI] _inventoryUI를 찾을 수 없어서 아이템을 인벤토리에 추가할 수 없습니다!");
+            return; // 인벤토리에 추가 실패하면 슬롯도 비우지 않음
+        }
 
+        // 슬롯 비우기
         SetAttribute(AttributeType.None);
+
+        // 설명 패널 끄기 (아이템이 사라졌으므로)
         ExplainPanelUI.Instance?.Hide();
     }
 
@@ -155,9 +183,19 @@ public class GridHeaderSlotUI : MonoBehaviour,
 
         if (InventoryItemUI.draggedItem != null)
         {
+            // 인벤토리 참조 재확인
+            if (_inventoryUI == null)
+            {
+                _inventoryUI = FindAnyObjectByType<AttributeInventoryUI>();
+            }
+
+            // 기존에 있던 속성은 인벤토리로 반환 (교체 로직)
             var current = GetCurrentAttribute();
             if (current != AttributeType.None && _inventoryUI != null)
+            {
                 _inventoryUI.CreateItem(current);
+                Debug.Log($"[GridHeaderSlotUI] 드롭 시 기존 아이템 반환: {current}");
+            }
 
             SetAttribute(InventoryItemUI.draggedItem.attributeType);
 
