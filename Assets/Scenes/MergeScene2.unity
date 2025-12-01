@@ -15110,6 +15110,7 @@ MonoBehaviour:
   monsterManager: {fileID: 796807203}
   inventoryUI: {fileID: 2110694718}
   currentState: 0
+  autoEquipFirstRound: 1
 --- !u!4 &1774762812
 Transform:
   m_ObjectHideFlags: 0

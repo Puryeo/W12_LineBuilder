@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -38,6 +39,10 @@ public class GameFlowManager : MonoBehaviour
     [Header("Debug Info")]
     public GameState currentState;
 
+    [Header("Initial Equipment Setup")]
+    [Tooltip("게임 시작 시 첫 라운드에서 자동으로 장비를 장착할지 여부")]
+    public bool autoEquipFirstRound = true;
+
     private void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(this); return; }
@@ -49,12 +54,101 @@ public class GameFlowManager : MonoBehaviour
         if (startRoundButton != null)
             startRoundButton.onClick.AddListener(OnStartRoundClicked);
 
-        // 게임 시작 시 1라운드 정비 단계로 진입
-        StartPreparation();
+        // 인벤토리 초기화
         if (inventoryUI != null)
         {
             inventoryUI.Initialize();
             inventoryUI.SetupTestItems();
+        }
+
+        // 게임 시작 시 첫 라운드는 PreparationPanel을 표시하지 않고 바로 전투 시작
+        if (autoEquipFirstRound && currentRoundIndex == 0)
+        {
+            // 첫 라운드: 자동 장비 장착 후 바로 전투 시작
+            AutoEquipInitialAttributes();
+            StartBattle();
+        }
+        else
+        {
+            // 일반적인 정비 단계 시작 (2라운드 이후)
+            StartPreparation();
+        }
+    }
+
+    /// <summary>
+    /// 첫 라운드 시작 시 자동으로 Row에 칼, Column에 방패를 장착합니다.
+    /// 인벤토리에서 아이템을 소모하여 장착합니다.
+    /// </summary>
+    private void AutoEquipInitialAttributes()
+    {
+        // GridAttributeMap 찾기
+        GridAttributeMap attributeMap = null;
+        if (GridManager.Instance != null)
+        {
+            attributeMap = GridManager.Instance.GetComponent<GridAttributeMap>();
+        }
+
+        if (attributeMap == null)
+        {
+            Debug.LogWarning("[GameFlowManager] GridAttributeMap을 찾을 수 없습니다. 자동 장착을 건너뜁니다.");
+            return;
+        }
+
+        // 인벤토리에서 칼/방패 아이템 찾아서 소모
+        if (inventoryUI != null)
+        {
+            // Row 슬롯에 칼(WoodSord) 장착
+            for (int i = 0; i < 8; i++)
+            {
+                // 인벤토리에서 칼 아이템 찾기
+                var swordItem = inventoryUI.AllInventoryItem.FirstOrDefault(item => item.attributeType == AttributeType.WoodSord);
+                if (swordItem != null)
+                {
+                    attributeMap.SetRow(i, AttributeType.WoodSord);
+                    inventoryUI.RemoveItem(swordItem); // 인벤토리에서 제거
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameFlowManager] 인벤토리에 칼이 부족합니다. Row {i} 장착 실패.");
+                }
+            }
+
+            // Column 슬롯에 방패(WoodShield) 장착
+            for (int i = 0; i < 8; i++)
+            {
+                // 인벤토리에서 방패 아이템 찾기
+                var shieldItem = inventoryUI.AllInventoryItem.FirstOrDefault(item => item.attributeType == AttributeType.WoodShield);
+                if (shieldItem != null)
+                {
+                    attributeMap.SetCol(i, AttributeType.WoodShield);
+                    inventoryUI.RemoveItem(shieldItem); // 인벤토리에서 제거
+                }
+                else
+                {
+                    Debug.LogWarning($"[GameFlowManager] 인벤토리에 방패가 부족합니다. Column {i} 장착 실패.");
+                }
+            }
+        }
+        else
+        {
+            Debug.LogWarning("[GameFlowManager] AttributeInventoryUI를 찾을 수 없습니다.");
+        }
+
+        Debug.Log("[GameFlowManager] 첫 라운드 자동 장비 장착 완료: Row=칼, Column=방패 (인벤토리에서 소모됨)");
+
+        // 모든 GridHeaderSlotUI의 시각적 업데이트
+        UpdateAllHeaderSlotVisuals();
+    }
+
+    /// <summary>
+    /// 씬에 있는 모든 GridHeaderSlotUI의 시각적 표현을 갱신합니다.
+    /// </summary>
+    private void UpdateAllHeaderSlotVisuals()
+    {
+        GridHeaderSlotUI[] allSlots = FindObjectsOfType<GridHeaderSlotUI>();
+        foreach (var slot in allSlots)
+        {
+            slot.UpdateVisual();
         }
     }
 
@@ -140,7 +234,7 @@ public class GameFlowManager : MonoBehaviour
             GridManager.Instance.ClearAllGridEntities();
         }
 
-        if(MonsterManager.Instance != null)
+        if (MonsterManager.Instance != null)
         {
             MonsterManager.Instance.ClearAllMonsters();
         }
@@ -149,10 +243,10 @@ public class GameFlowManager : MonoBehaviour
         {
             BombManager.Instance.ClearAllBombs();
         }
-        
-        if(currentRoundIndex == rounds.Count - 1)
+
+        if (currentRoundIndex == rounds.Count - 1)
         {
-            if(gameClearPanel != null)
+            if (gameClearPanel != null)
             {
                 gameClearPanel.SetActive(true);
                 currentRoundIndex = 0;
@@ -188,7 +282,8 @@ public class GameFlowManager : MonoBehaviour
                 CardManager.Instance.ResetHandForNextRound();
             }
 
-            StartPreparation(); // 다음 라운드 정비 시작
+            // 2라운드부터는 정비 단계 표시
+            StartPreparation();
         }
         else
         {

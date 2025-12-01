@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro; // TextMeshPro for world text
@@ -170,8 +170,8 @@ public class GridManager : MonoBehaviour
         var result = CheckLineClear();
         if (result.HasClear)
         {
+            // RemoveLines 내부에서 OnLinesCleared 이벤트를 발생시킴
             RemoveLines(result);
-            OnLinesCleared?.Invoke(result);
         }
 
         // 알림: 배치가 "완료된 시점"에 전파 (라인 클리어/해체 처리가 끝난 후)
@@ -334,6 +334,9 @@ public class GridManager : MonoBehaviour
         var colsStr = result.ClearedCols != null ? string.Join(", ", result.ClearedCols) : string.Empty;
         Debug.Log($"[GridManager] RemoveLines -> rows:{rowsStr} cols:{colsStr} removed:{removed} bombs:{removedBombs.Count}");
 
+        // 라인 클리어 이벤트 발생
+        OnLinesCleared?.Invoke(result);
+
         // 추가: Grid에서 제거된 폭탄에 대해 BombManager의 인스턴스도 제거하도록 통지
         if (removedBombs.Count > 0 && BombManager.Instance != null)
         {
@@ -380,6 +383,60 @@ public class GridManager : MonoBehaviour
 
         Debug.Log("[GridManager] Grid Cleared (View & Data)");
     }
+
+    #region Cell Data Access (for GridRotationManager)
+
+    /// <summary>
+    /// 특정 위치의 셀 데이터를 가져옵니다.
+    /// 범위를 벗어나면 기본값(빈 셀)을 반환합니다.
+    /// </summary>
+    public Cell GetCell(Vector2Int pos)
+    {
+        if (_cells == null || !InBounds(pos))
+            return default;
+        return _cells[pos.x, pos.y];
+    }
+
+    /// <summary>
+    /// 특정 위치의 셀을 초기화(비움)하고 해당 뷰를 제거합니다.
+    /// </summary>
+    public void ClearCell(Vector2Int pos)
+    {
+        if (_cells == null || !InBounds(pos))
+            return;
+
+        _cells[pos.x, pos.y] = default;
+        DestroyCellView(pos);
+    }
+
+    /// <summary>
+    /// 특정 위치에 셀 데이터를 설정합니다.
+    /// 뷰는 별도로 RecreateView로 생성해야 합니다.
+    /// </summary>
+    public void SetCell(Vector2Int pos, Cell cell)
+    {
+        if (_cells == null || !InBounds(pos))
+            return;
+
+        _cells[pos.x, pos.y] = cell;
+    }
+
+    /// <summary>
+    /// 주어진 셀 데이터를 기반으로 블록 또는 폭탄 뷰를 재생성합니다.
+    /// </summary>
+    public void RecreateView(Vector2Int pos, Cell cell)
+    {
+        if (cell.isBomb)
+        {
+            CreateBombView(pos, cell.bombTimer);
+        }
+        else if (cell.occupied && cell.block != null)
+        {
+            CreateCellView(pos, cell.block);
+        }
+    }
+
+    #endregion
 
     #region Bomb APIs
 
@@ -539,7 +596,7 @@ public class GridManager : MonoBehaviour
     private void OnDrawGizmos()
     {
         // Grid wireframe
-        Gizmos.color = new Color(1f, 1f, 1f, 0.15f);    
+        Gizmos.color = new Color(1f, 1f, 1f, 0.15f);
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
