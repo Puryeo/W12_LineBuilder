@@ -43,6 +43,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         public AttributeType previousAttribute;
     }
     private readonly List<DisabledSlotSnapshot> _disabledSlotSnapshots = new List<DisabledSlotSnapshot>(8);
+    private bool _pendingSlotRestore = false;
 
     private bool _isDead = false;
     private int _hpAtPatternStart = -1;
@@ -165,7 +166,9 @@ public class MonsterController : MonoBehaviour, IMonsterController
     {
         if (_isDead || (_monster != null && _monster.IsDead)) return;
 
-        // ?�재 ?�약???�턴???�으�??�?�서 ?�택(?�립?�행, weight 기반)
+        TryRestorePendingSlots();
+
+        // 현재 예약된 패턴이 없어서 선택(독립 실행, weight 기반)
         if (_currentElement == null)
         {
             var sel = SelectNextPattern();
@@ -380,6 +383,8 @@ public class MonsterController : MonoBehaviour, IMonsterController
             slot.SetLocked(true, pattern.lockedSlotSprite);
             Debug.Log($"[MonsterController] DisableSlot removed {before} from {slot.axis} {slot.index}.");
         }
+
+        _pendingSlotRestore = true;
     }
 
     private List<GridHeaderSlotUI> GatherSlotCandidates(DisableSlotAttackPatternSO pattern)
@@ -427,7 +432,11 @@ public class MonsterController : MonoBehaviour, IMonsterController
 
     private void RestoreDisabledSlots()
     {
-        if (_disabledSlotSnapshots.Count == 0) return;
+        if (_disabledSlotSnapshots.Count == 0)
+        {
+            _pendingSlotRestore = false;
+            return;
+        }
 
         foreach (var snapshot in _disabledSlotSnapshots)
         {
@@ -440,6 +449,13 @@ public class MonsterController : MonoBehaviour, IMonsterController
                 slot.SetAttribute(snapshot.previousAttribute);
         }
         _disabledSlotSnapshots.Clear();
+        _pendingSlotRestore = false;
+    }
+
+    private void TryRestorePendingSlots()
+    {
+        if (_pendingSlotRestore)
+            RestoreDisabledSlots();
     }
 
     private PatternElement SelectNextPattern()
