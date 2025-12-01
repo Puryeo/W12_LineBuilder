@@ -586,6 +586,10 @@ public class MonsterController : MonoBehaviour, IMonsterController, IPhaseAction
     /// </summary>
     protected virtual void PlayAttackAnimationHook(AttackPatternSO pattern)
     {
+        // 기절(그로기) 상태에서는 공격 회전 애니메이션을 재생하지 않는다.
+        if (pattern != null && pattern.attackType == AttackType.Groggy)
+            return;
+
         // Monster 컴포넌트의 공격 애니메이션 재생
         if (_monster != null)
         {
@@ -617,6 +621,30 @@ public class MonsterController : MonoBehaviour, IMonsterController, IPhaseAction
                 {
                     CombatManager.Instance.ApplyPlayerDamage(dp.damage);
                     Debug.Log($"[MonsterController] Applied {dp.damage} dmg to player by {name}");
+                }
+            }
+            else if (pattern.attackType == AttackType.HeavyDamage)
+            {
+                var hp = pattern as HeavyDamageAttackPatternSO;
+                if (hp != null && CombatManager.Instance != null)
+                {
+                    CombatManager.Instance.ApplyPlayerDamage(hp.damage, $"{name}_HeavyAttack");
+                    Debug.Log($"[MonsterController] Applied {hp.damage} heavy dmg to player by {name}");
+                }
+            }
+            else if (pattern.attackType == AttackType.Groggy)
+            {
+                var gp = pattern as GroggyAttackPatternSO;
+                var desc = gp != null ? gp.description : string.Empty;
+                Debug.Log($"[MonsterController] {name} is groggy. Skipping turn. {desc}");
+            }
+            else if (pattern.attackType == AttackType.DisableSlot)
+            {
+                var sp = pattern as DisableSlotAttackPatternSO;
+                if (sp != null)
+                {
+                    ExecuteDisableSlotPattern(sp);
+                    Debug.Log($"[MonsterController] DisableSlot pattern executed by {name}");
                 }
             }
         }

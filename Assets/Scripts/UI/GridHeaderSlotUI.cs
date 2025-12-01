@@ -226,8 +226,19 @@ public class GridHeaderSlotUI : MonoBehaviour,
         if (_isLocked)
         {
             var lockSprite = GetLockedSprite();
-            slotIcon.sprite = lockSprite;
-            slotIcon.color = lockSprite != null ? Color.white : new Color(1f, 1f, 1f, 0f);
+            if (lockSprite != null)
+            {
+                // 자물쇠 스프라이트가 있으면 표시
+                slotIcon.sprite = lockSprite;
+                slotIcon.color = Color.white;
+            }
+            else
+            {
+                // 자물쇠 스프라이트가 없으면 빨간색 X 표시 (fallback)
+                slotIcon.sprite = null;
+                slotIcon.color = new Color(1f, 0.2f, 0.2f, 0.8f); // 반투명 빨간색
+                Debug.LogWarning($"[GridHeaderSlotUI] Locked slot ({axis} {index}) has no lock sprite! Assign 'lockedSprite' or pattern's 'lockedSlotSprite'", this);
+            }
             return;
         }
 
