@@ -619,6 +619,30 @@ public class MonsterController : MonoBehaviour, IMonsterController, IPhaseAction
                     Debug.Log($"[MonsterController] Applied {dp.damage} dmg to player by {name}");
                 }
             }
+            else if (pattern.attackType == AttackType.HeavyDamage)
+            {
+                var hp = pattern as HeavyDamageAttackPatternSO;
+                if (hp != null && CombatManager.Instance != null)
+                {
+                    CombatManager.Instance.ApplyPlayerDamage(hp.damage, $"{name}_HeavyAttack");
+                    Debug.Log($"[MonsterController] Applied {hp.damage} heavy dmg to player by {name}");
+                }
+            }
+            else if (pattern.attackType == AttackType.Groggy)
+            {
+                var gp = pattern as GroggyAttackPatternSO;
+                var desc = gp != null ? gp.description : string.Empty;
+                Debug.Log($"[MonsterController] {name} is groggy. Skipping turn. {desc}");
+            }
+            else if (pattern.attackType == AttackType.DisableSlot)
+            {
+                var sp = pattern as DisableSlotAttackPatternSO;
+                if (sp != null)
+                {
+                    ExecuteDisableSlotPattern(sp);
+                    Debug.Log($"[MonsterController] DisableSlot pattern executed by {name}");
+                }
+            }
         }
         catch (Exception ex)
         {
