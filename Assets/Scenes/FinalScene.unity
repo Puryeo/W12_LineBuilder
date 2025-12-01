@@ -4894,7 +4894,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &590444466
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4944,7 +4944,7 @@ MonoBehaviour:
   - {fileID: 2026730371}
   - {fileID: 392308812}
   - {fileID: 264776765}
-  - {fileID: 264776765}
+  - {fileID: 777922067}
   prevButton: {fileID: 568602088}
   nextButton: {fileID: 1120620353}
   pageLabelTMP: {fileID: 1839225309}
