@@ -18,4 +18,8 @@ MonoBehaviour:
   repeat: 0
   weight: 1
   attackIcon: {fileID: -8332125718833699075, guid: 54868527ab8c0f04b9a7917cceab9eaa, type: 3}
+  patternDescription: "\uADF8\uB85C\uAE30 \uC0C1\uD0DC\uC785\uB2C8\uB2E4.\n\uC544\uBB34\uAC83\uB3C4
+    \uD560 \uC218 \uC5C6\uC2B5\uB2C8\uB2E4."
+  forceSequential: 0
+  estimatedDuration: 1
   description: 

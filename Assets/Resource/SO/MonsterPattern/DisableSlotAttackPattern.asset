@@ -18,6 +18,11 @@ MonoBehaviour:
   repeat: 0
   weight: 1
   attackIcon: {fileID: -5620155193319629329, guid: 9d3e86785c7444b4ab881cb8951e1819, type: 3}
+  patternDescription: "1\uD134\uB9C8\uB2E4, \uB79C\uB364\uD55C \uC7A5\uBE44 \uC2AC\uB86F
+    \uD55C\uAC1C\uB97C \uC7A0\uAE09\uB2C8\uB2E4.\n\n\uC7A0\uAE34 \uC2AC\uB86F\uC740
+    <color=red>\uB2A5\uB825\uC774 \uBB34\uD6A8\uD654</color>\uB429\uB2C8\uB2E4."
+  forceSequential: 0
+  estimatedDuration: 1
   slotsToDisable: 1
   includeRows: 1
   includeColumns: 1

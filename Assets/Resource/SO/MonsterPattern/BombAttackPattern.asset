@@ -18,6 +18,12 @@ MonoBehaviour:
   repeat: 0
   weight: 1
   attackIcon: {fileID: -1483665779731714255, guid: 1b6a3dce0cfbaea4f898564348f630ce, type: 3}
+  patternDescription: "1x1 \uD06C\uAE30\uC758 \uD3ED\uD0C4\uC744 \uADF8\uB9AC\uB4DC\uC5D0
+    \uBC30\uCE58\uD569\uB2C8\uB2E4.\n\n<color=red>2</color>\uD134 \uB0B4\uB85C \uD3ED\uD0C4
+    \uBE14\uB7ED\uC744 \uC81C\uAC70\uD558\uC9C0 \uBABB\uD558\uBA74,\n<color=red>20</color>
+    \uB300\uBBF8\uC9C0\uB97C \uC785\uC2B5\uB2C8\uB2E4."
+  forceSequential: 0
+  estimatedDuration: 1
   startTimer: 2
   maxTimer: 2
   spawnMode: 0
