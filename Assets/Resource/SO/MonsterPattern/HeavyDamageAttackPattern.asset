@@ -18,6 +18,12 @@ MonoBehaviour:
   repeat: 0
   weight: 1
   attackIcon: {fileID: -5825250732961213246, guid: d2ab442a35f2f6244ac369a3ecb63967, type: 3}
+  patternDescription: "<color=red>20</color> \uB300\uBBF8\uC9C0\uB97C \uC785\uD799\uB2C8\uB2E4.\n\n2\uD134
+    \uC548\uC5D0  \uBAAC\uC2A4\uD130\uC5D0\uAC8C\n<color=red>20</color> \uB300\uBBF8\uC9C0\uB97C
+    \uC785\uD788\uBA74,\n\n\uD328\uD134\uC774 \uCDE8\uC18C\uB418\uACE0 <color=green>\uADF8\uB85C\uAE30</color>
+    \uC0C1\uD0DC\uC5D0 \uAC78\uB9BD\uB2C8\uB2E4."
+  forceSequential: 0
+  estimatedDuration: 1
   damage: 20
   cancelThreshold: 20
   groggyPattern: {fileID: 11400000, guid: dc4492991331cf74bb1e0aeeb81c2554, type: 2}

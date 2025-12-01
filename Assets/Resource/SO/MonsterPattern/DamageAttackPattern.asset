@@ -18,5 +18,8 @@ MonoBehaviour:
   repeat: 0
   weight: 1
   attackIcon: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
+  patternDescription: "<color=red>10</color>\uC758 \uB300\uBBF8\uC9C0\uB97C \uC785\uD799\uB2C8\uB2E4."
+  forceSequential: 0
+  estimatedDuration: 1
   damage: 10
   affectsShield: 1

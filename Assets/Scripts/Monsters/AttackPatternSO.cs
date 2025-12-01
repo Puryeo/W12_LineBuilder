@@ -27,6 +27,12 @@ public class AttackPatternSO : ScriptableObject
 
     [Tooltip("몬스터 상단 UI에 표시할 공격 아이콘")]
     public Sprite attackIcon;
+
+    [Header("Pattern Description")]
+    [Tooltip("패턴 아이콘 호버 시 표시될 설명 (ExplainPanel)")]
+    [TextArea(3, 5)]
+    public string patternDescription;
+
     [Header("Phase Execution Settings")]
     [Tooltip("이 패턴이 강제로 직렬 실행을 요구하는지 (전역 Parallel 모드여도 Sequential로 다운그레이드)")]
     public bool forceSequential = false;

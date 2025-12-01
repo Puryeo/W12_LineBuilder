@@ -1,10 +1,11 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
 [DisallowMultipleComponent]
-public class MonsterUI : MonoBehaviour
+public class MonsterUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [Header("UI References")]
     public Image hpFill;
@@ -36,6 +37,7 @@ public class MonsterUI : MonoBehaviour
     private Coroutine _fadeCoroutine;
     private Coroutine _flashCoroutine;
     private CanvasGroup _canvasGroup;
+    private AttackPatternSO _currentPattern;
 
     public void Initialize(Monster m, int index)
     {
@@ -229,6 +231,7 @@ public class MonsterUI : MonoBehaviour
     /// <summary>패턴과 남은 턴으로 UI 바인딩</summary>
     public void BindPattern(AttackPatternSO pattern, int remainingTurns)
     {
+        _currentPattern = pattern;
         if (attackIconImage != null)
         {
             attackIconImage.sprite = pattern != null ? pattern.attackIcon : null;
@@ -250,12 +253,39 @@ public class MonsterUI : MonoBehaviour
     /// <summary>패턴 UI 초기화/클리어</summary>
     public void ClearPatternUI()
     {
+        _currentPattern = null;
         if (attackIconImage != null)
         {
             attackIconImage.sprite = null;
             attackIconImage.enabled = false;
         }
         if (turnsText != null) turnsText.text = string.Empty;
+    }
+
+    // ---------------- Hover Events for Pattern Description ----------------
+
+    /// <summary>
+    /// 패턴 아이콘 위에 마우스를 올렸을 때 설명 패널 표시
+    /// </summary>
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (_currentPattern == null) return;
+        if (ExplainPanelUI.Instance == null) return;
+        if (attackIconImage == null || !attackIconImage.enabled) return;
+        if (string.IsNullOrEmpty(_currentPattern.patternDescription)) return;
+
+        Sprite iconSprite = _currentPattern.attackIcon;
+        RectTransform iconRect = attackIconImage.rectTransform;
+
+        ExplainPanelUI.Instance.Show(iconSprite, _currentPattern.patternDescription, iconRect);
+    }
+
+    /// <summary>
+    /// 패턴 아이콘에서 마우스가 벗어났을 때 설명 패널 숨김
+    /// </summary>
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        ExplainPanelUI.Instance?.Hide();
     }
 
     // ---------------- Flash Effect ----------------
