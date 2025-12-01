@@ -3,26 +3,30 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using TMPro;
 
 public class SlotRewardSelectionPanel : MonoBehaviour
 {
     [Header("Option Buttons")]
-    public Button option1Btn; // 예: 불 (WoodSord)
-    public Button option2Btn; // 예: 물 (WoodShield)
-    public Button option3Btn; // 예: 풀 (Grass)
-
-    [Header("Highlight Images (Assign outlines)")]
-    [Tooltip("선택 시 켜질 테두리 이미지들 (버튼 순서대로 할당)")]
+    public Button option1Btn;
     public GameObject highlight1;
-    public GameObject highlight2;
-    public GameObject highlight3;
+    public Image option1Icon;
+    public TMP_Text option1Text;
+
+    public Sprite staffIcon;
+    public Sprite crossIcon;
+    public Sprite bratCandyIcon;
+
+    public string staffText;
+    public string crossText;
+    public string bratCandyText;
 
     [Header("Action Buttons")]
-    public Button confirmBtn; // 받는다
-    public Button cancelBtn;  // 받지 않는다
+    public Button confirmBtn;
+    public Button cancelBtn; 
 
     [Header("Settings")]
-    public int rewardAmount = 4; // 지급할 개수
+    public int rewardAmount = 4;
 
     [Header("References")]
     public AttributeInventoryUI attributeInventoryUI;
@@ -31,22 +35,35 @@ public class SlotRewardSelectionPanel : MonoBehaviour
     private Action _onSelectionComplete; // 부모에게 알릴 콜백
     private AttributeType _selectedAttribute = AttributeType.None; // 현재 선택된 속성
 
-    private void Start()
+    private void OnEnable()
     {
-        // 1. 옵션 버튼 리스너 연결 (속성 타입은 기획에 맞게 수정 가능)
+        AttributeType attributeType = AttributeType.None;
+
+        switch (GameFlowManager.Instance.currentRoundIndex)
+        {
+            case 0:
+                attributeType = AttributeType.BratCandy;
+                option1Icon.sprite = bratCandyIcon;
+                option1Text.text = bratCandyText;
+                break;
+            case 1:
+                attributeType = AttributeType.Cross;
+                option1Icon.sprite = crossIcon;
+                option1Text.text = crossText;
+                break;
+            case 2:
+                attributeType = AttributeType.Staff;
+                option1Icon.sprite = staffIcon;
+                option1Text.text = staffText;
+                break;
+            default:
+                break;
+        }
+
         if (option1Btn != null)
-            option1Btn.onClick.AddListener(() => OnOptionClicked(AttributeType.Staff, 0));
+            option1Btn.onClick.AddListener(() => OnOptionClicked(attributeType, 0));
 
-        if (option2Btn != null)
-            option2Btn.onClick.AddListener(() => OnOptionClicked(AttributeType.Hammer, 1));
-
-        if (option3Btn != null)
-            option3Btn.onClick.AddListener(() => OnOptionClicked(AttributeType.Cross, 2));
-
-        // --- 추가: 버튼 호버로 ExplainPanel 표시 (옵션 A: 기존 스크립트 수정 없이 내부에서 등록)
-        AddHoverToButton(option1Btn, AttributeType.Staff);
-        AddHoverToButton(option2Btn, AttributeType.Hammer);
-        AddHoverToButton(option3Btn, AttributeType.Cross);
+        AddHoverToButton(option1Btn, attributeType);
 
         // 2. 하단 액션 버튼 리스너 연결
         if (confirmBtn != null)
@@ -74,8 +91,6 @@ public class SlotRewardSelectionPanel : MonoBehaviour
 
         // 모든 하이라이트 끄기
         if (highlight1 != null) highlight1.SetActive(false);
-        if (highlight2 != null) highlight2.SetActive(false);
-        if (highlight3 != null) highlight3.SetActive(false);
 
         // 확인 버튼 비활성화 (선택된 게 없으므로)
         if (confirmBtn != null) confirmBtn.interactable = false;
@@ -90,8 +105,6 @@ public class SlotRewardSelectionPanel : MonoBehaviour
 
         // 1. 하이라이트 갱신 (선택된 놈만 켜고 나머지 끄기)
         if (highlight1 != null) highlight1.SetActive(index == 0);
-        if (highlight2 != null) highlight2.SetActive(index == 1);
-        if (highlight3 != null) highlight3.SetActive(index == 2);
 
         // 2. 확인 버튼 활성화
         if (confirmBtn != null) confirmBtn.interactable = true;
@@ -102,11 +115,15 @@ public class SlotRewardSelectionPanel : MonoBehaviour
     /// </summary>
     private void OnConfirmClicked()
     {
-        // 안전장치: 선택된 게 없으면 무시
         if (_selectedAttribute == AttributeType.None) return;
+
+        rewardAmount = 4;
 
         if (attributeInventoryUI != null)
         {
+            if(_selectedAttribute == AttributeType.BratCandy)
+                rewardAmount = 1; // 개초딩 캔디는 1개 지급
+
             attributeInventoryUI.AddRoundRewards(_selectedAttribute, rewardAmount);
             Debug.Log($"[Reward] {_selectedAttribute} x {rewardAmount} 지급 완료");
         }

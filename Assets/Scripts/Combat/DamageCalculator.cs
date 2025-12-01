@@ -20,8 +20,9 @@ public static class DamageCalculator
         public int sordBonusPerBlock = 1;
         public int lightningMultiplier = 2;
 
-        public int staffAoEDamage = 10; // 스태프 라인당 광역 대미지
-        public int hammerMultiplier = 2; // 망치 라인 폭탄 존재 시 배율
+        public int staffAoEDamage = 10; // 스태프 라인당 광역 데미지
+        public int crossDamage = 10; // 십자 라인당 추가 데미지
+        public int bratCandyBonus = 10; // 개초딩 사탕 추가 데미지 
     }
 
     public static DamageBreakdown Calculate(GridManager.LineClearResult result, GridManager grid, GridAttributeMap attrMap, Settings settings)
@@ -44,6 +45,28 @@ public static class DamageCalculator
             int height = Math.Max(1, grid.height);
             int perBlock = Math.Max(0, settings.sordBonusPerBlock);
 
+            // 개초딩 사탕 존재 여부 확인
+            bool isRowPassiveActive = false;
+            bool isColPassiveActive = false;
+
+            for (int r = 0; r < grid.height; r++)
+            {
+                if (attrMap.GetRow(r) == AttributeType.BratCandy)
+                {
+                    isRowPassiveActive = true;
+                    break;
+                }
+            }
+
+            for (int c = 0; c < grid.width; c++)
+            {
+                if (attrMap.GetCol(c) == AttributeType.BratCandy)
+                {
+                    isColPassiveActive = true;
+                    break;
+                }
+            }
+
             if (result.ClearedRows != null)
             {
                 foreach (var y in result.ClearedRows)
@@ -55,13 +78,9 @@ public static class DamageCalculator
                     if (at == AttributeType.WoodSord)
                         attrDamage += width * perBlock;
 
-                    if (at == AttributeType.Hammer)
+                    if (at == AttributeType.Cross)
                     {
-                        if (HasBombInRow(result.RemovedBombPositions, y))
-                        {
-                            d.baseDamage *= settings.hammerMultiplier;
-                            Debug.Log($"[Calculator] Hammer activated on Row {y}! Damage x{settings.hammerMultiplier}");
-                        }
+                        attrDamage += settings.crossDamage;
                     }
 
                     if (at == AttributeType.Staff)
@@ -69,6 +88,10 @@ public static class DamageCalculator
                         aoeDamageSum += settings.staffAoEDamage;
                     }
 
+                    if (isRowPassiveActive)
+                    {
+                        attrDamage += settings.bratCandyBonus;
+                    }
                 }
             }
 
@@ -83,20 +106,19 @@ public static class DamageCalculator
                     if (at == AttributeType.WoodSord)
                         attrDamage += height * perBlock;
 
-                    // [망치]
-                    if (at == AttributeType.Hammer)
+                    if (at == AttributeType.Cross)
                     {
-                        if (HasBombInCol(result.RemovedBombPositions, x))
-                        {
-                            d.baseDamage *= settings.hammerMultiplier;
-                            Debug.Log($"[Calculator] Hammer activated on Col {x}! Damage x{settings.hammerMultiplier}");
-                        }
+                        attrDamage += settings.crossDamage;
                     }
 
-                    // [스태프]
                     if (at == AttributeType.Staff)
                     {
                         aoeDamageSum += settings.staffAoEDamage;
+                    }
+
+                    if (isColPassiveActive)
+                    {
+                        attrDamage += settings.bratCandyBonus;
                     }
                 }
             }
@@ -106,8 +128,6 @@ public static class DamageCalculator
         d.preLightningDamage = d.baseDamage + d.attributeDamage + d.defuseDamage;
         d.lightningApplied = lightning;
         d.finalDamage = d.preLightningDamage * (d.lightningApplied ? Math.Max(1, settings.lightningMultiplier) : 1);
-
-        // [스태프 결과 저장]
         d.aoeDamage = aoeDamageSum;
 
         return d;

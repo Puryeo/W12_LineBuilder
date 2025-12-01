@@ -2,141 +2,271 @@
 using UnityEngine;
 
 /// <summary>
-/// 그리드 라인을 렌더링하고, 마우스 오버 시 4x4 영역을 하이라이트 표시합니다.
+/// 그리드 라인 렌더링(일반/화염 효과) 및 4x4 영역 하이라이트 기능을 통합 관리하는 클래스
 /// </summary>
-[RequireComponent(typeof(Transform))]
 public class GridLineRenderer : MonoBehaviour
 {
+    [Header("References")]
     public GridManager grid;
-    public Material lineMaterial;
-    public Color lineColor = Color.white;
+    public GridAttributeMap attributeMap;
 
-    [Tooltip("World units")]
-    public float lineWidth = 0.03f;
+    [Header("Detection Target")]
+    public AttributeType targetAttribute = AttributeType.BratCandy; // 감지할 속성 (개초딩 사탕)
 
+    // =========================================================
+    // 1. Grid Line Settings (Normal & Fiery)
+    // =========================================================
+    [Header("Normal Line Settings (기본)")]
+    public Material normalLineMaterial;
+    public Color normalLineColor = new Color(1f, 1f, 1f, 0.1f);
+    public float normalLineWidth = 0.02f;
+
+    [Header("Fiery Line Settings (이글거림)")]
+    public Material fieryLineMaterial;
+    [ColorUsage(true, true)]
+    public Color fieryLineColor = new Color(1f, 0.4f, 0f, 1.5f); // HDR 컬러
+
+    [Header("Fiery Adjustments (인스펙터 조정)")]
+    [Tooltip("라인 두께")]
+    public float fireLineWidth = 0.15f;
+
+    [Tooltip("텍스처 반복 횟수 (X: 길이 방향, Y: 두께 방향) - 뭉개짐 해결용")]
+    public Vector2 fireTiling = new Vector2(5.0f, 1.0f);
+
+    [Tooltip("흐르는 속도 (X: 가로 흐름, Y: 세로 흐름)")]
+    public Vector2 fireScrollSpeed = new Vector2(2.0f, 0.0f);
+
+    [Range(0f, 1f)]
+    [Tooltip("깜빡임 강도 (0이면 안 깜빡임)")]
+    public float flickerIntensity = 0.1f;
+
+    [Tooltip("이글거리는 라인의 위치 미세 조정 (Z값을 -0.1 등으로 하여 앞으로 빼세요)")]
+    public Vector3 fireOffset = new Vector3(0, 0, -0.05f);
+
+    // =========================================================
+    // 2. Quadrant Highlight Settings
+    // =========================================================
     [Header("4x4 Quadrant Highlight")]
-    [Tooltip("4x4 영역 하이라이트 활성화 여부")]
     public bool enableQuadrantHighlight = true;
-
-    [Tooltip("4x4 영역 외곽선 색상")]
     public Color quadrantHighlightColor = new Color(1f, 1f, 0f, 1f); // 노란색
-
-    [Tooltip("4x4 영역 외곽선 두께")]
     public float quadrantHighlightWidth = 0.1f;
 
-    private readonly List<LineRenderer> _lines = new List<LineRenderer>();
+    // =========================================================
+    // Internal Variables
+    // =========================================================
 
-    [Tooltip("에디터에서 기존 라인들을 즉시 다시 구성할지 여부")]
-    public bool allowEditorRebuild = false;
+    // 그리드 라인 관리용
+    private Dictionary<string, LineRenderer> _allLines = new Dictionary<string, LineRenderer>();
+    private List<LineRenderer> _activeFieryLines = new List<LineRenderer>();
 
-    // 4x4 하이라이트용 LineRenderer (동적 생성)
+    // 4x4 하이라이트 관리용
     private LineRenderer _highlightLineRenderer;
     private int _currentHighlightedQuadrant = -1;
-
-    // 4개의 4x4 영역 정의 (좌하단 기준) - GridRotationManager와 동일
+    private const int QUADRANT_SIZE = 4;
     private readonly Vector2Int[] _quadrantOrigins = new Vector2Int[]
     {
-        new Vector2Int(0, 0),   // 좌하단
-        new Vector2Int(4, 0),   // 우하단
-        new Vector2Int(0, 4),   // 좌상단
-        new Vector2Int(4, 4)    // 우상단
+        new Vector2Int(0, 0), new Vector2Int(4, 0),
+        new Vector2Int(0, 4), new Vector2Int(4, 4)
     };
-    private const int QUADRANT_SIZE = 4;
 
-    private void OnEnable()
+    private void Start()
     {
-        if (grid == null)
-            grid = GridManager.Instance;
-        EnsureMaterial();
-        ConfigureExistingLines();
-        CreateHighlightLineRenderer();
+        InitializeReferences();
+        RefreshGridLines(); // 그리드 라인 생성
+        CreateHighlightLineRenderer(); // 하이라이트 라인 생성
     }
 
-    private void OnDisable()
+    private void InitializeReferences()
     {
-        // 하이라이트 LineRenderer 정리
-        if (_highlightLineRenderer != null)
-        {
-#if UNITY_EDITOR
-            if (!Application.isPlaying) DestroyImmediate(_highlightLineRenderer.gameObject);
-            else Destroy(_highlightLineRenderer.gameObject);
-#else
-            Destroy(_highlightLineRenderer.gameObject);
-#endif
-            _highlightLineRenderer = null;
-        }
+        if (grid == null) grid = GridManager.Instance;
+        if (attributeMap == null) attributeMap = FindObjectOfType<GridAttributeMap>();
+
+        // 머티리얼 안전장치
+        if (normalLineMaterial == null) normalLineMaterial = new Material(Shader.Find("Sprites/Default"));
+        if (fieryLineMaterial == null) fieryLineMaterial = new Material(Shader.Find("Sprites/Default"));
     }
 
     private void Update()
     {
-        if (!enableQuadrantHighlight || grid == null)
+        // 1. 화염 애니메이션 처리
+        if (_activeFieryLines.Count > 0)
         {
-            // 하이라이트 비활성화 시 숨김
-            if (_highlightLineRenderer != null)
-                _highlightLineRenderer.enabled = false;
-            return;
+            UpdateFieryAnimation();
         }
 
-        UpdateQuadrantHighlight();
+        // 2. 마우스 오버 4x4 하이라이트 처리
+        if (enableQuadrantHighlight)
+        {
+            UpdateQuadrantHighlight();
+        }
+        else if (_highlightLineRenderer != null && _highlightLineRenderer.enabled)
+        {
+            _highlightLineRenderer.enabled = false;
+        }
     }
 
     private void OnValidate()
     {
-        // 인스펙터 변경 시 기존 자식 LineRenderer 스타일을 갱신
-        if (!Application.isPlaying && !allowEditorRebuild) return;
-        EnsureMaterial();
-        ConfigureExistingLines();
-
-        // 하이라이트 LineRenderer 스타일도 갱신
+        // 에디터에서 값 변경 시 하이라이트 스타일 즉시 갱신
         if (_highlightLineRenderer != null)
         {
             ConfigureHighlightLine();
         }
     }
 
-    private void EnsureMaterial()
+    private void OnDisable()
     {
-        if (lineMaterial == null)
+        // 하이라이트 정리
+        if (_highlightLineRenderer != null)
         {
-            var shader = Shader.Find("Sprites/Default");
-            if (shader != null) lineMaterial = new Material(shader);
+            if (Application.isPlaying) Destroy(_highlightLineRenderer.gameObject);
+            else DestroyImmediate(_highlightLineRenderer.gameObject);
         }
     }
 
-    /// <summary>
-    /// 씬에 이미 존재하는 자식 LineRenderer들을 찾아 스타일을 적용합니다.
-    /// (동적 생성 로직은 제거되어 기존 라인을 재사용함)
-    /// </summary>
-    public void ConfigureExistingLines()
+    // =========================================================
+    // Logic A: Fiery Grid Lines
+    // =========================================================
+
+    private void UpdateFieryAnimation()
     {
-        _lines.Clear();
-        var found = GetComponentsInChildren<LineRenderer>(true);
-        foreach (var lr in found)
+        float time = Time.time;
+        Vector2 offset = fireScrollSpeed * time;
+        float flicker = Mathf.Sin(time * 15f) * flickerIntensity + 1f;
+        float currentWidth = fireLineWidth * flicker;
+
+        foreach (var lr in _activeFieryLines)
         {
             if (lr == null) continue;
 
-            // 하이라이트용 LineRenderer는 제외
-            if (lr == _highlightLineRenderer) continue;
+            // 텍스처 스크롤 & 타일링
+            if (lr.material != null)
+            {
+                lr.material.mainTextureOffset = offset;
+                lr.material.mainTextureScale = fireTiling;
+            }
 
-            _lines.Add(lr);
-            if (lineMaterial != null)
-                lr.material = lineMaterial;
-            lr.startColor = lineColor;
-            lr.endColor = lineColor;
-            lr.useWorldSpace = true;
-            lr.receiveShadows = false;
-            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            lr.loop = false;
-            lr.numCapVertices = 0;
-            lr.numCornerVertices = 0;
-            lr.startWidth = lineWidth;
-            lr.endWidth = lineWidth;
+            // 두께 & 색상 애니메이션
+            lr.startWidth = currentWidth;
+            lr.endWidth = currentWidth;
+            lr.startColor = fieryLineColor;
+            lr.endColor = fieryLineColor;
         }
     }
 
-    /// <summary>
-    /// 4x4 영역 하이라이트용 LineRenderer를 생성합니다.
-    /// </summary>
+    [ContextMenu("Force Refresh Grid Lines")]
+    public void RefreshGridLines()
+    {
+        if (grid == null) return;
+        if (attributeMap == null) attributeMap = FindObjectOfType<GridAttributeMap>();
+
+        _activeFieryLines.Clear();
+
+        // 전체 라인 불태우기 여부 판정
+        bool triggerAllHorizontalFire = CheckAnyRowHasAttribute();
+        bool triggerAllVerticalFire = CheckAnyColHasAttribute();
+
+        // 1. 가로선 (Horizontal)
+        for (int y = 0; y <= grid.height; y++)
+        {
+            string lineKey = $"H_{y}";
+            LineRenderer lr = GetOrCreateLine(lineKey);
+
+            bool isFiery = triggerAllHorizontalFire;
+            Vector3 startPos = grid.origin + new Vector3(0, y * grid.cellSize, 0);
+            Vector3 endPos = grid.origin + new Vector3(grid.width * grid.cellSize, y * grid.cellSize, 0);
+
+            SetupGridLine(lr, startPos, endPos, isFiery, true);
+        }
+
+        // 2. 세로선 (Vertical)
+        for (int x = 0; x <= grid.width; x++)
+        {
+            string lineKey = $"V_{x}";
+            LineRenderer lr = GetOrCreateLine(lineKey);
+
+            bool isFiery = triggerAllVerticalFire;
+            Vector3 startPos = grid.origin + new Vector3(x * grid.cellSize, 0, 0);
+            Vector3 endPos = grid.origin + new Vector3(x * grid.cellSize, grid.height * grid.cellSize, 0);
+
+            SetupGridLine(lr, startPos, endPos, isFiery, false);
+        }
+    }
+
+    private void SetupGridLine(LineRenderer lr, Vector3 start, Vector3 end, bool isFiery, bool isHorizontal)
+    {
+        if (isFiery)
+        {
+            lr.material = fieryLineMaterial;
+            lr.textureMode = LineTextureMode.Tile;
+            lr.sortingOrder = 20;
+
+            // 위치 보정 (오프셋 적용)
+            Vector3 offset = fireOffset;
+            if (isHorizontal) offset += new Vector3(0, -fireLineWidth * 0.5f, 0);
+            else offset += new Vector3(fireLineWidth * 0.5f, 0, 0);
+
+            lr.SetPosition(0, start + offset);
+            lr.SetPosition(1, end + offset);
+
+            _activeFieryLines.Add(lr);
+        }
+        else
+        {
+            lr.material = normalLineMaterial;
+            lr.textureMode = LineTextureMode.Stretch;
+            lr.startColor = normalLineColor;
+            lr.endColor = normalLineColor;
+            lr.startWidth = normalLineWidth;
+            lr.endWidth = normalLineWidth;
+            lr.sortingOrder = 0;
+
+            lr.SetPosition(0, start);
+            lr.SetPosition(1, end);
+        }
+    }
+
+    private bool CheckAnyRowHasAttribute()
+    {
+        if (attributeMap == null) return false;
+        for (int i = 0; i < grid.height; i++)
+            if (attributeMap.GetRow(i) == targetAttribute) return true;
+        return false;
+    }
+
+    private bool CheckAnyColHasAttribute()
+    {
+        if (attributeMap == null) return false;
+        for (int i = 0; i < grid.width; i++)
+            if (attributeMap.GetCol(i) == targetAttribute) return true;
+        return false;
+    }
+
+    private LineRenderer GetOrCreateLine(string key)
+    {
+        if (_allLines.TryGetValue(key, out LineRenderer existingLr))
+        {
+            if (existingLr != null) return existingLr;
+        }
+
+        GameObject go = new GameObject($"GridLine_{key}");
+        go.transform.SetParent(this.transform, false);
+        LineRenderer lr = go.AddComponent<LineRenderer>();
+
+        lr.useWorldSpace = true;
+        lr.receiveShadows = false;
+        lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        lr.loop = false;
+        lr.positionCount = 2;
+
+        _allLines[key] = lr;
+        return lr;
+    }
+
+    // =========================================================
+    // Logic B: Quadrant Highlight
+    // =========================================================
+
     private void CreateHighlightLineRenderer()
     {
         if (_highlightLineRenderer != null) return;
@@ -147,125 +277,72 @@ public class GridLineRenderer : MonoBehaviour
 
         _highlightLineRenderer = go.AddComponent<LineRenderer>();
         ConfigureHighlightLine();
-
-        _highlightLineRenderer.enabled = false; // 초기에는 숨김
+        _highlightLineRenderer.enabled = false;
     }
 
-    /// <summary>
-    /// 하이라이트 LineRenderer의 스타일을 설정합니다.
-    /// </summary>
     private void ConfigureHighlightLine()
     {
         if (_highlightLineRenderer == null) return;
 
-        if (lineMaterial != null)
-            _highlightLineRenderer.material = lineMaterial;
+        if (normalLineMaterial != null) // 하이라이트도 기본 머티리얼 공유 가능
+            _highlightLineRenderer.material = normalLineMaterial;
 
         _highlightLineRenderer.startColor = quadrantHighlightColor;
         _highlightLineRenderer.endColor = quadrantHighlightColor;
         _highlightLineRenderer.useWorldSpace = true;
         _highlightLineRenderer.receiveShadows = false;
         _highlightLineRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        _highlightLineRenderer.loop = true; // 사각형이므로 루프
+        _highlightLineRenderer.loop = true; // 사각형 루프
         _highlightLineRenderer.numCapVertices = 0;
         _highlightLineRenderer.numCornerVertices = 0;
         _highlightLineRenderer.startWidth = quadrantHighlightWidth;
         _highlightLineRenderer.endWidth = quadrantHighlightWidth;
-        _highlightLineRenderer.positionCount = 4; // 사각형 4개 점
+        _highlightLineRenderer.positionCount = 4;
+        _highlightLineRenderer.sortingOrder = 30; // 불꽃보다 위에 그림
     }
 
-    /// <summary>
-    /// 마우스 위치에 따라 4x4 영역 하이라이트를 업데이트합니다.
-    /// </summary>
     private void UpdateQuadrantHighlight()
     {
-        if (_highlightLineRenderer == null) return;
+        if (_highlightLineRenderer == null || grid == null) return;
 
         Vector3 mouseWorldPos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         Vector2Int gridPos = grid.WorldToGrid(mouseWorldPos);
 
         if (!grid.InBounds(gridPos))
         {
-            // 그리드 밖이면 하이라이트 숨김
             _highlightLineRenderer.enabled = false;
             _currentHighlightedQuadrant = -1;
             return;
         }
 
-        // 어느 4x4 영역에 속하는지 계산
-        int quadX = gridPos.x / QUADRANT_SIZE; // 0 or 1
-        int quadY = gridPos.y / QUADRANT_SIZE; // 0 or 1
+        int quadX = gridPos.x / QUADRANT_SIZE;
+        int quadY = gridPos.y / QUADRANT_SIZE;
         int quadrantIndex = quadY * 2 + quadX;
 
-        // 같은 영역이면 업데이트 불필요
-        if (quadrantIndex == _currentHighlightedQuadrant)
+        if (quadrantIndex == _currentHighlightedQuadrant && _highlightLineRenderer.enabled)
             return;
 
         _currentHighlightedQuadrant = quadrantIndex;
-
-        // 해당 영역의 외곽선 그리기
         DrawQuadrantOutline(quadrantIndex);
         _highlightLineRenderer.enabled = true;
     }
 
-    /// <summary>
-    /// 지정된 4x4 영역의 외곽선을 LineRenderer로 그립니다.
-    /// </summary>
-    /// <param name="quadrantIndex">영역 인덱스 (0~3)</param>
     private void DrawQuadrantOutline(int quadrantIndex)
     {
         if (quadrantIndex < 0 || quadrantIndex >= _quadrantOrigins.Length) return;
-        if (_highlightLineRenderer == null) return;
 
         Vector2Int origin = _quadrantOrigins[quadrantIndex];
-
-        // 4x4 영역의 실제 경계 계산
-        // origin은 좌하단 셀, 영역은 origin부터 origin + (3, 3)까지
         float halfCell = grid.cellSize * 0.5f;
 
-        // 좌하단 셀의 좌하단 모서리
-        Vector3 bottomLeftCell = grid.GridToWorld(origin);
-        Vector3 bottomLeft = bottomLeftCell + new Vector3(-halfCell, -halfCell, -0.2f);
+        // 4x4 영역 모서리 계산
+        Vector3 bottomLeft = grid.GridToWorld(origin) + new Vector3(-halfCell, -halfCell, -0.3f); // Z값을 더 앞으로
+        Vector3 bottomRight = grid.GridToWorld(origin + new Vector2Int(QUADRANT_SIZE - 1, 0)) + new Vector3(halfCell, -halfCell, -0.3f);
+        Vector3 topRight = grid.GridToWorld(origin + new Vector2Int(QUADRANT_SIZE - 1, QUADRANT_SIZE - 1)) + new Vector3(halfCell, halfCell, -0.3f);
+        Vector3 topLeft = grid.GridToWorld(origin + new Vector2Int(0, QUADRANT_SIZE - 1)) + new Vector3(-halfCell, halfCell, -0.3f);
 
-        // 우하단 셀의 우하단 모서리 (x가 origin.x + 3)
-        Vector3 bottomRightCell = grid.GridToWorld(origin + new Vector2Int(QUADRANT_SIZE - 1, 0));
-        Vector3 bottomRight = bottomRightCell + new Vector3(halfCell, -halfCell, -0.2f);
-
-        // 우상단 셀의 우상단 모서리 (x가 origin.x + 3, y가 origin.y + 3)
-        Vector3 topRightCell = grid.GridToWorld(origin + new Vector2Int(QUADRANT_SIZE - 1, QUADRANT_SIZE - 1));
-        Vector3 topRight = topRightCell + new Vector3(halfCell, halfCell, -0.2f);
-
-        // 좌상단 셀의 좌상단 모서리 (y가 origin.y + 3)
-        Vector3 topLeftCell = grid.GridToWorld(origin + new Vector2Int(0, QUADRANT_SIZE - 1));
-        Vector3 topLeft = topLeftCell + new Vector3(-halfCell, halfCell, -0.2f);
-
-        // LineRenderer에 네 점 설정 (시계방향)
         _highlightLineRenderer.SetPosition(0, bottomLeft);
         _highlightLineRenderer.SetPosition(1, bottomRight);
         _highlightLineRenderer.SetPosition(2, topRight);
         _highlightLineRenderer.SetPosition(3, topLeft);
-    }
-
-    /// <summary>
-    /// 외부에서 특정 영역을 하이라이트할 때 사용 (GridRotationManager에서 호출 가능)
-    /// </summary>
-    public void HighlightQuadrant(int quadrantIndex)
-    {
-        if (!enableQuadrantHighlight) return;
-        if (_highlightLineRenderer == null) CreateHighlightLineRenderer();
-
-        _currentHighlightedQuadrant = quadrantIndex;
-        DrawQuadrantOutline(quadrantIndex);
-        _highlightLineRenderer.enabled = true;
-    }
-
-    /// <summary>
-    /// 하이라이트를 숨깁니다.
-    /// </summary>
-    public void HideHighlight()
-    {
-        if (_highlightLineRenderer != null)
-            _highlightLineRenderer.enabled = false;
-        _currentHighlightedQuadrant = -1;
     }
 }

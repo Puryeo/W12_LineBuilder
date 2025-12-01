@@ -28,7 +28,7 @@ public class GridHeaderSlotUI : MonoBehaviour,
     public Sprite woodSordSprite;
     public Sprite woodShieldSprite;
     public Sprite staff;
-    public Sprite hammer;
+    public Sprite bratCandy;
     public Sprite cross;
     [Tooltip("Sprite used when the slot is locked by DisableSlot pattern, etc.")]
     public Sprite lockedSprite;
@@ -95,6 +95,12 @@ public class GridHeaderSlotUI : MonoBehaviour,
             _attributeMap.SetCol(index, type);
 
         UpdateVisual();
+
+        GridLineRenderer lineRenderer = FindAnyObjectByType<GridLineRenderer>();
+        if (lineRenderer != null)
+        {
+            lineRenderer.RefreshGridLines();
+        }
     }
 
     public void OnPointerClick(PointerEventData eventData)
@@ -234,29 +240,33 @@ public class GridHeaderSlotUI : MonoBehaviour,
             slotIcon.color = new Color(1f, 1f, 1f, 0f);
             return;
         }
-
-        slotIcon.color = Color.white;
-        switch (currentType)
+        else
         {
-            case AttributeType.WoodSord:
-                slotIcon.sprite = woodSordSprite;
-                break;
-            case AttributeType.WoodShield:
-                slotIcon.sprite = woodShieldSprite;
-                break;
-            case AttributeType.Staff:
-                slotIcon.sprite = staff;
-                break;
-            case AttributeType.Hammer:
-                slotIcon.sprite = hammer;
-                break;
-            case AttributeType.Cross:
-                slotIcon.sprite = cross;
-                break;
-            default:
-                slotIcon.sprite = null;
-                slotIcon.color = new Color(1f, 1f, 1f, 0f);
-                break;
+            // 속성이 있으면 해당 이미지로 교체하고 불투명하게 만들기
+            slotIcon.color = Color.white;
+
+            switch (currentType)
+            {
+                case AttributeType.WoodSord:
+                    slotIcon.sprite = woodSordSprite;
+                    break;
+                case AttributeType.WoodShield:
+                    slotIcon.sprite = woodShieldSprite;
+                    break;
+                case AttributeType.Staff:
+                    slotIcon.sprite = staff;
+                    break;
+                case AttributeType.BratCandy:
+                    slotIcon.sprite = bratCandy;
+                    break;
+                case AttributeType.Cross:
+                    slotIcon.sprite = cross;
+                    break;
+                default:
+                    slotIcon.sprite = null;
+                    slotIcon.color = new Color(1, 1, 1, 0);
+                    break;
+            }
         }
     }
 
