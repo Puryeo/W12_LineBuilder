@@ -10,10 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b4e90088292006f4d98d9b18515bcff6, type: 3}
-  m_Name: RoundData_1
+  m_Name: RoundData_4
   m_EditorClassIdentifier: 
-  roundNumber: 0
+  roundNumber: 3
   enemiesToSpawn:
-  - {fileID: 318505273110147761, guid: c798392231c52cf4dadc57ae4b6bb6fa, type: 3}
-  - {fileID: 318505273110147761, guid: c798392231c52cf4dadc57ae4b6bb6fa, type: 3}
+  - {fileID: 318505273110147761, guid: 2fb82cfeb6fd7d347b255a05715edb1d, type: 3}
+  - {fileID: 318505273110147761, guid: 9a6a810003f94684cac2e171cd884f69, type: 3}
+  - {fileID: 318505273110147761, guid: 5fc181acb8a5960489e2e8e53cdf6c79, type: 3}
   rewardGold: 100

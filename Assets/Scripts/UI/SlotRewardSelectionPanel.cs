@@ -37,14 +37,18 @@ public class SlotRewardSelectionPanel : MonoBehaviour
 
     private void OnEnable()
     {
+        option1Btn.onClick.RemoveAllListeners();
+        confirmBtn.onClick.RemoveAllListeners();
+        cancelBtn.onClick.RemoveAllListeners();
+
         AttributeType attributeType = AttributeType.None;
 
         switch (GameFlowManager.Instance.currentRoundIndex)
         {
             case 0:
-                attributeType = AttributeType.BratCandy;
-                option1Icon.sprite = bratCandyIcon;
-                option1Text.text = bratCandyText;
+                attributeType = AttributeType.Staff;
+                option1Icon.sprite = staffIcon;
+                option1Text.text = staffText;
                 break;
             case 1:
                 attributeType = AttributeType.Cross;
@@ -52,9 +56,9 @@ public class SlotRewardSelectionPanel : MonoBehaviour
                 option1Text.text = crossText;
                 break;
             case 2:
-                attributeType = AttributeType.Staff;
-                option1Icon.sprite = staffIcon;
-                option1Text.text = staffText;
+                attributeType = AttributeType.BratCandy;
+                option1Icon.sprite = bratCandyIcon;
+                option1Text.text = bratCandyText;
                 break;
             default:
                 break;
