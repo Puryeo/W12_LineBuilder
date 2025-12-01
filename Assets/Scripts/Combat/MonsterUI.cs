@@ -22,10 +22,19 @@ public class MonsterUI : MonoBehaviour
     [Tooltip("이 컴포넌트를 몬스터 GameObject에 붙여두면 자동으로 같은 GameObject의 Monster를 찾아 바인드합니다.")]
     public bool autoBindToLocalMonster = true;
 
+    [Header("Flash Effect Settings")]
+    [Tooltip("피격 시 점멸 효과 총 지속 시간 (초)")]
+    public float flashDuration = 0.5f;
+    [Tooltip("점멸 횟수 (깜빡임 횟수)")]
+    public int flashCount = 2;
+    [Tooltip("점멸할 색상")]
+    public Color flashColor = new Color(1f, 0.3f, 0.3f, 1f); // 붉은색
+
     private Monster _monster;
     private int _index = -1;
 
     private Coroutine _fadeCoroutine;
+    private Coroutine _flashCoroutine;
     private CanvasGroup _canvasGroup;
 
     public void Initialize(Monster m, int index)
@@ -92,6 +101,13 @@ public class MonsterUI : MonoBehaviour
         }
         if (MonsterManager.Instance != null) MonsterManager.Instance.OnSelectedMonsterChanged -= OnSelectedChanged;
         if (selectButton != null) selectButton.onClick.RemoveListener(OnSelectClicked);
+
+        // 코루틴 정리
+        if (_flashCoroutine != null)
+        {
+            StopCoroutine(_flashCoroutine);
+            _flashCoroutine = null;
+        }
     }
 
     private void OnMonsterHealthChanged(int current, int max) => UpdateFromMonster();
@@ -240,5 +256,150 @@ public class MonsterUI : MonoBehaviour
             attackIconImage.enabled = false;
         }
         if (turnsText != null) turnsText.text = string.Empty;
+    }
+
+    // ---------------- Flash Effect ----------------
+
+    /// <summary>
+    /// 피격 시 점멸 효과 재생
+    /// 모든 UI 이미지와 텍스트를 지정된 색상으로 점멸시킵니다.
+    /// </summary>
+    public void PlayFlashEffect()
+    {
+        // 중복 방지
+        if (_flashCoroutine != null)
+        {
+            StopCoroutine(_flashCoroutine);
+            _flashCoroutine = null;
+        }
+
+        _flashCoroutine = StartCoroutine(FlashEffectCoroutine());
+    }
+
+    /// <summary>
+    /// 점멸 효과 코루틴
+    /// </summary>
+    private IEnumerator FlashEffectCoroutine()
+    {
+        // 모든 UI 요소 수집
+        var images = new System.Collections.Generic.List<Image>();
+        var texts = new System.Collections.Generic.List<TextMeshProUGUI>();
+
+        // Image 수집
+        if (hpFill != null) images.Add(hpFill);
+        if (attackIconImage != null) images.Add(attackIconImage);
+        var bgImage = GetComponent<Image>();
+        if (bgImage != null) images.Add(bgImage);
+
+        // TextMeshProUGUI 수집
+        if (hpText != null) texts.Add(hpText);
+        if (nameText != null) texts.Add(nameText);
+        if (turnsText != null) texts.Add(turnsText);
+
+        // 원래 색상 저장
+        var originalImageColors = new System.Collections.Generic.Dictionary<Image, Color>();
+        var originalTextColors = new System.Collections.Generic.Dictionary<TextMeshProUGUI, Color>();
+
+        foreach (var img in images)
+        {
+            if (img != null)
+                originalImageColors[img] = img.color;
+        }
+
+        foreach (var txt in texts)
+        {
+            if (txt != null)
+                originalTextColors[txt] = txt.color;
+        }
+
+        // 점멸 효과 실행
+        float singleFlashDuration = flashDuration / (flashCount * 2f); // 각 깜빡임은 2단계 (어두워지기 + 밝아지기)
+
+        for (int i = 0; i < flashCount; i++)
+        {
+            // 1단계: 원래 색상 → flashColor (알파값 감소)
+            float elapsed = 0f;
+            while (elapsed < singleFlashDuration)
+            {
+                if (this == null || gameObject == null) yield break;
+
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / singleFlashDuration);
+
+                // Image 색상 변경
+                foreach (var kvp in originalImageColors)
+                {
+                    if (kvp.Key != null)
+                    {
+                        Color targetColor = flashColor;
+                        targetColor.a = Mathf.Lerp(kvp.Value.a, flashColor.a * 0.3f, t);
+                        kvp.Key.color = Color.Lerp(kvp.Value, targetColor, t);
+                    }
+                }
+
+                // Text 색상 변경
+                foreach (var kvp in originalTextColors)
+                {
+                    if (kvp.Key != null)
+                    {
+                        Color targetColor = flashColor;
+                        targetColor.a = Mathf.Lerp(kvp.Value.a, flashColor.a * 0.3f, t);
+                        kvp.Key.color = Color.Lerp(kvp.Value, targetColor, t);
+                    }
+                }
+
+                yield return null;
+            }
+
+            // 2단계: flashColor → 원래 색상 (알파값 증가)
+            elapsed = 0f;
+            while (elapsed < singleFlashDuration)
+            {
+                if (this == null || gameObject == null) yield break;
+
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / singleFlashDuration);
+
+                // Image 색상 변경
+                foreach (var kvp in originalImageColors)
+                {
+                    if (kvp.Key != null)
+                    {
+                        Color fromColor = flashColor;
+                        fromColor.a = flashColor.a * 0.3f;
+                        kvp.Key.color = Color.Lerp(fromColor, kvp.Value, t);
+                    }
+                }
+
+                // Text 색상 변경
+                foreach (var kvp in originalTextColors)
+                {
+                    if (kvp.Key != null)
+                    {
+                        Color fromColor = flashColor;
+                        fromColor.a = flashColor.a * 0.3f;
+                        kvp.Key.color = Color.Lerp(fromColor, kvp.Value, t);
+                    }
+                }
+
+                yield return null;
+            }
+        }
+
+        // 원래 색상으로 완전히 복원
+        foreach (var kvp in originalImageColors)
+        {
+            if (kvp.Key != null)
+                kvp.Key.color = kvp.Value;
+        }
+
+        foreach (var kvp in originalTextColors)
+        {
+            if (kvp.Key != null)
+                kvp.Key.color = kvp.Value;
+        }
+
+        // 코루틴 참조 정리
+        _flashCoroutine = null;
     }
 }

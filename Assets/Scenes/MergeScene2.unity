@@ -6268,6 +6268,7 @@ MonoBehaviour:
   sordBonusPerBlock: 1
   gridDamagePopupPrefab: {fileID: 8610739867175518237, guid: c83136a3fcba079459ced3e4f3a06910, type: 3}
   gridPopupOffset: {x: 0, y: 0.2, z: 0}
+  lineClearHighlighter: {fileID: 1841732838}
   playerHP: 0
   monsterHP: 0
 --- !u!4 &796807202
@@ -10765,6 +10766,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60b8a57d62385194e9e24e9f5ec9b082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  monsterAttackMode: 0
 --- !u!4 &1227308435
 Transform:
   m_ObjectHideFlags: 0
@@ -16078,6 +16080,7 @@ GameObject:
   - component: {fileID: 1841732835}
   - component: {fileID: 1841732836}
   - component: {fileID: 1841732837}
+  - component: {fileID: 1841732838}
   m_Layer: 0
   m_Name: 'GridManager '
   m_TagString: Untagged
@@ -16221,6 +16224,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableRotation: 1
+--- !u!114 &1841732838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1841732830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60b6c873081e6894d83169fe9d566a43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lineRendererPrefab: {fileID: 0}
+  highlightColor: {r: 1, g: 0.047900185, b: 0.015686274, a: 1}
+  lineWidth: 0.1
+  duration: 1
+  lineMaterial: {fileID: 0}
+  zOffset: 1
+  enableDebugLogs: 0
 --- !u!1 &1843987832
 GameObject:
   m_ObjectHideFlags: 0

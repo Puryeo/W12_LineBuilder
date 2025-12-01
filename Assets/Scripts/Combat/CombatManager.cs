@@ -31,6 +31,10 @@ public class CombatManager : MonoBehaviour
     [Tooltip("그리드 팝업 생성 위치 오프셋(월드 좌표 기준)")]
     public Vector3 gridPopupOffset = new Vector3(0f, 0.2f, 0f);
 
+    [Header("Line Clear Effects")]
+    [Tooltip("라인 클리어 하이라이트 처리기")]
+    public LineClearHighlighter lineClearHighlighter;
+
     [Header("Debug")]
     public int playerHP;
     public int monsterHP;
@@ -55,22 +59,36 @@ public class CombatManager : MonoBehaviour
         _grid = GridManager.Instance;
         if (_grid != null)
             _attrMap = _grid.GetComponent<GridAttributeMap>();
+
+        // LineClearHighlighter 초기화
+        if (lineClearHighlighter != null && _grid != null)
+        {
+            lineClearHighlighter.Initialize(_grid);
+        }
     }
 
     private void OnEnable()
     {
-        if (GridManager.Instance != null)
-            GridManager.Instance.OnLinesCleared += HandleLinesCleared;
-        else
-            Debug.LogWarning("[CombatManager] GridManager.Instance is null on OnEnable.");
+        // NOTE: GridManager.OnLinesCleared 구독은 TurnManager에서 처리합니다.
+        // TurnManager가 LineClearAction을 큐에 추가하고, 페이즈 시스템에서 처리합니다.
+        // if (GridManager.Instance != null)
+        //     GridManager.Instance.OnLinesCleared += HandleLinesCleared;
+        // else
+        //     Debug.LogWarning("[CombatManager] GridManager.Instance is null on OnEnable.");
     }
 
     private void OnDisable()
     {
-        if (GridManager.Instance != null)
-            GridManager.Instance.OnLinesCleared -= HandleLinesCleared;
+        // NOTE: 이제 GridManager 구독을 하지 않으므로 해제도 불필요
+        // if (GridManager.Instance != null)
+        //     GridManager.Instance.OnLinesCleared -= HandleLinesCleared;
     }
 
+    /// <summary>
+    /// [DEPRECATED] 이 메서드는 더 이상 사용되지 않습니다.
+    /// 대신 ApplyLineClearDamage()가 LineClearAction에서 호출됩니다.
+    /// </summary>
+    [System.Obsolete("Use ApplyLineClearDamage() instead. Called from LineClearAction.")]
     private void HandleLinesCleared(GridManager.LineClearResult result)
     {
         if (result == null) return;
@@ -158,6 +176,9 @@ public class CombatManager : MonoBehaviour
         try { GameEvents.RaiseOnDamageCalculationResolved(breakdown, origin); } catch { }
     }
 
+    /// <summary>
+    /// 플레이어 체력 회복
+    /// </summary>
     public void HealPlayer(int amount, string origin = "Heal")
     {
         if (amount <= 0) return;
@@ -170,7 +191,9 @@ public class CombatManager : MonoBehaviour
         GameEvents.RaiseOnPlayerHealthChanged(playerHP, playerMaxHP, origin);
     }
 
-    // 그리드 팝업 생성 로직: 각 행/열 중앙 및 폭탄 위치에 해당 구성요소 데미지 표시
+    /// <summary>
+    /// 그리드 팝업 생성: 각 행/열 중앙 및 폭탄 위치에 데미지 표시
+    /// </summary>
     private void TrySpawnGridPopups(GridManager.LineClearResult result, int damage)
     {
         if (_grid == null) return;
@@ -216,6 +239,9 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 개별 팝업 스폰
+    /// </summary>
     private void SpawnGridDamagePopup(Vector3 worldPos, int amount = -1)
     {
         if (gridDamagePopupPrefab == null) return;
@@ -241,6 +267,9 @@ public class CombatManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 플레이어 데미지 적용 (쉴드 우선 흡수)
+    /// </summary>
     public void ApplyPlayerDamage(int amount, string origin = null)
     {
         if (amount <= 0) return;
@@ -319,15 +348,17 @@ public class CombatManager : MonoBehaviour
         CheckWinLose();
     }
 
-    // 변경: 몬스터가 개체로 존재하면 MonsterManager를 통해 선택된 몬스터에 전달.
-    public void ApplyMonsterDamage(int amount)
+    /// <summary>
+    /// 몬스터 데미지 적용 (MonsterManager를 통해 선택된 몬스터에 전달)
+    /// </summary>
+    public void ApplyMonsterDamage(int amount, bool delayDeath = false)
     {
         if (amount <= 0) return;
 
         // MonsterManager가 있으면 선택된 몬스터에게 데미지 전달하고 기존 단일 HP는 변경하지 않음
         if (MonsterManager.Instance != null)
         {
-            MonsterManager.Instance.ApplyDamageToSelected(amount);
+            MonsterManager.Instance.ApplyDamageToSelected(amount, delayDeath);
             return;
         }
 
@@ -337,6 +368,9 @@ public class CombatManager : MonoBehaviour
         CheckWinLose();
     }
 
+    /// <summary>
+    /// 승패 체크
+    /// </summary>
     private void CheckWinLose()
     {
         // MonsterManager 존재 시 모든 몬스터 사망 여부로 승리 판단
@@ -358,7 +392,6 @@ public class CombatManager : MonoBehaviour
             {
                 monsterHP = 0;
                 Debug.Log("[CombatManager] WIN: Monster HP <= 0");
-                // TODO: GameManager 승리 처리 호출
             }
         }
 
@@ -366,11 +399,12 @@ public class CombatManager : MonoBehaviour
         {
             playerHP = 0;
             Debug.Log("[CombatManager] LOSE: Player HP <= 0");
-            // TODO: GameManager 패배 처리 호출
         }
     }
 
-    // Replace existing TriggerCamShakeByDamage with this for runtime verification
+    /// <summary>
+    /// 데미지 크기에 따라 카메라 쉐이크 트리거
+    /// </summary>
     private string TriggerCamShakeByDamage(int damage)
     {
         var cm = CamShakeManager.Instance;
@@ -414,15 +448,285 @@ public class CombatManager : MonoBehaviour
         }
     }
 
-    // 디버그용: 외부에서 체력 즉시 설정
+    /// <summary>
+    /// 디버그용: 플레이어 체력 즉시 설정
+    /// </summary>
     public void SetPlayerHP(int hp)
     {
         playerHP = Mathf.Clamp(hp, 0, playerMaxHP);
     }
 
+    /// <summary>
+    /// 디버그용: 몬스터 체력 즉시 설정
+    /// </summary>
     public void SetMonsterHP(int hp)
     {
         // 하위호환: 여전히 단일 monsterHP 세팅 지원
         monsterHP = Mathf.Clamp(hp, 0, monsterMaxHP);
     }
+
+    #region Phase Action Hooks
+    /// <summary>
+    /// 라인 클리어 애니메이션 훅
+    /// LineClearAction.Play()에서 호출됩니다.
+    /// LineClearHighlighter를 사용하여 클리어된 라인의 테두리를 하이라이트합니다.
+    /// </summary>
+    /// <param name="result">라인 클리어 결과</param>
+    /// <param name="reportDuration">애니메이션 시간을 보고하는 콜백</param>
+    public virtual void PlayLineClearAnimationHook(GridManager.LineClearResult result, Action<float> reportDuration)
+    {
+        if (lineClearHighlighter != null)
+        {
+            // LineClearHighlighter 코루틴 시작 (인스펙터 설정 시간만큼 대기)
+            StartCoroutine(lineClearHighlighter.HighlightLines(result, reportDuration));
+            Debug.Log($"[CombatManager] Playing line clear highlight (duration: {lineClearHighlighter.duration}s)");
+        }
+        else
+        {
+            // LineClearHighlighter가 없으면 즉시 완료
+            Debug.LogWarning("[CombatManager] LineClearHighlighter is null, skipping animation");
+            reportDuration?.Invoke(0f);
+        }
+    }
+
+    /// <summary>
+    /// 몬스터 히트 애니메이션 훅
+    /// LineClearAction.Play()에서 호출됩니다.
+    /// 데미지는 이미 적용된 상태이므로 점멸 효과의 지속 시간만 보고합니다.
+    /// 주의: 점멸 효과는 Monster.TakeDamage()에서 MonsterUI.PlayFlashEffect()로 자동 재생됩니다.
+    /// </summary>
+    /// <param name="damage">적용된 데미지 (참고용)</param>
+    /// <param name="reportDuration">점멸 효과 시간을 보고하는 콜백</param>
+    public virtual void PlayMonsterHitAnimationHook(int damage, Action<float> reportDuration)
+    {
+        if (MonsterManager.Instance != null)
+        {
+            var selectedMonster = MonsterManager.Instance.GetSelectedMonster();
+            if (selectedMonster != null && damage > 0)
+            {
+                // MonsterUI의 flashDuration 사용
+                float duration = 0f;
+                if (selectedMonster.monsterUI != null)
+                {
+                    duration = selectedMonster.monsterUI.flashDuration;
+                }
+
+                // 점멸 효과는 TakeDamage()에서 자동 재생되므로 시간만 보고
+                reportDuration?.Invoke(duration);
+                Debug.Log($"[CombatManager] Flash effect duration for {selectedMonster.monsterName}: {duration:F2}s (damage {damage} already applied)");
+                return;
+            }
+        }
+
+        // 몬스터가 없거나 데미지가 0이면 즉시 완료
+        Debug.LogWarning($"[CombatManager] No selected monster found or no damage (damage: {damage})");
+        reportDuration?.Invoke(0f);
+    }
+
+    /// <summary>
+    /// 라인 클리어 데미지 계산 (데미지 적용 없음)
+    /// LineClearAction.Play()에서 호출됩니다.
+    /// </summary>
+    public DamageBreakdown CalculateLineClearDamage(GridManager.LineClearResult result)
+    {
+        if (result == null)
+        {
+            Debug.LogWarning("[CombatManager] CalculateLineClearDamage: result is null");
+            return null;
+        }
+
+        // Settings 구성
+        var settings = new DamageCalculator.Settings
+        {
+            baseWeaponDamage = baseWeaponDamage,
+            sordBonusPerBlock = sordBonusPerBlock,
+            lightningMultiplier = 2,
+            staffAoEDamage = 10,
+            crossDamage = 10
+        };
+
+        var breakdown = DamageCalculator.Calculate(result, _grid, _attrMap, settings);
+        Debug.Log($"[CombatManager] CalculateLineClearDamage: {breakdown}");
+
+        return breakdown;
+    }
+
+    /// <summary>
+    /// 계산된 데미지 적용 (애니메이션 없음)
+    /// LineClearAction.Play()에서 애니메이션 대기 후 호출됩니다.
+    /// </summary>
+    public void ApplyCalculatedDamage(DamageBreakdown breakdown, GridManager.LineClearResult result, bool delayDeath = false)
+    {
+        if (breakdown == null)
+        {
+            Debug.LogWarning("[CombatManager] ApplyCalculatedDamage: breakdown is null");
+            return;
+        }
+
+        string origin = "CombatManager.ApplyCalculatedDamage";
+
+        // 1) 단일 타겟 데미지 적용
+        if (breakdown.finalDamage > 0)
+        {
+            int monsterBefore = monsterHP;
+            ApplyMonsterDamage(breakdown.finalDamage, delayDeath);
+            int monsterAfter = monsterHP;
+
+            Debug.Log($"[CombatManager] {origin} Applied finalDamage:{breakdown.finalDamage} (monsterHP now {monsterHP})");
+
+            // CamShake
+            string shakeCalled = TriggerCamShakeByDamage(breakdown.finalDamage);
+
+            // Serialize damage event
+            try
+            {
+                var rec = new DamageEventRecord
+                {
+                    origin = origin,
+                    target = "Monster",
+                    amountRequested = breakdown.finalDamage,
+                    shieldAbsorbed = 0,
+                    amountApplied = Math.Max(0, monsterBefore - monsterAfter),
+                    hpBefore = monsterBefore,
+                    hpAfter = monsterAfter,
+                    breakdown = breakdown != null ? breakdown.ToLogString(origin) : null,
+                    note = "Line clear -> monster damage",
+                    shakeCalled = shakeCalled
+                };
+                DamageEventSerializer.AppendRecord(rec);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[CombatManager] Damage serialization failed (monster): {ex}");
+            }
+        }
+
+        // 2) 광역(AoE) 데미지 적용
+        if (breakdown.aoeDamage > 0 && MonsterManager.Instance != null)
+        {
+            MonsterManager.Instance.ApplyAoEDamage(breakdown.aoeDamage, delayDeath);
+            Debug.Log($"[CombatManager] Staff Effect: AoE {breakdown.aoeDamage} damage applied.");
+        }
+
+        // 3) 그리드 팝업 스폰
+        if (result != null)
+        {
+            TrySpawnGridPopups(result, breakdown.finalDamage);
+        }
+
+        // 4) 폭탄 해체 이벤트
+        if (result != null)
+        {
+            int defusedBombs = (result.RemovedBombPositions != null) ? result.RemovedBombPositions.Count : 0;
+            if (defusedBombs > 0)
+            {
+                try
+                {
+                    OnBombDefused?.Invoke(defusedBombs);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"[CombatManager] OnBombDefused handler threw: {ex}");
+                }
+            }
+        }
+
+        // 5) 승패 체크
+        CheckWinLose();
+
+        // 6) 디버그 이벤트
+        try { GameEvents.RaiseOnDamageCalculationResolved(breakdown, origin); } catch { }
+    }
+
+    /// <summary>
+    /// [DEPRECATED] 라인 클리어 데미지 적용
+    /// 대신 CalculateLineClearDamage() + PlayMonsterHitAnimationHook() + ApplyCalculatedDamage() 사용
+    /// </summary>
+    [System.Obsolete("Use CalculateLineClearDamage() + ApplyCalculatedDamage() instead")]
+    public void ApplyLineClearDamage(GridManager.LineClearResult result)
+    {
+        if (result == null) return;
+
+        // Settings 구성
+        var settings = new DamageCalculator.Settings
+        {
+            baseWeaponDamage = baseWeaponDamage,
+            sordBonusPerBlock = sordBonusPerBlock,
+            lightningMultiplier = 2,
+            staffAoEDamage = 10,
+            crossDamage = 10
+        };
+
+        var breakdown = DamageCalculator.Calculate(result, _grid, _attrMap, settings);
+
+        string origin = "CombatManager.ApplyLineClearDamage";
+        Debug.Log($"[CombatManager] {origin} DamageBreakdown: {breakdown}");
+
+        // 1) 단일 타겟 데미지 적용
+        if (breakdown.finalDamage > 0)
+        {
+            int monsterBefore = monsterHP;
+            ApplyMonsterDamage(breakdown.finalDamage);
+            int monsterAfter = monsterHP;
+
+            Debug.Log($"[CombatManager] {origin} Applied finalDamage:{breakdown.finalDamage} (monsterHP now {monsterHP})");
+
+            // CamShake
+            string shakeCalled = TriggerCamShakeByDamage(breakdown.finalDamage);
+
+            // Serialize damage event
+            try
+            {
+                var rec = new DamageEventRecord
+                {
+                    origin = origin,
+                    target = "Monster",
+                    amountRequested = breakdown.finalDamage,
+                    shieldAbsorbed = 0,
+                    amountApplied = Math.Max(0, monsterBefore - monsterAfter),
+                    hpBefore = monsterBefore,
+                    hpAfter = monsterAfter,
+                    breakdown = breakdown != null ? breakdown.ToLogString(origin) : null,
+                    note = "Line clear -> monster damage",
+                    shakeCalled = shakeCalled
+                };
+                DamageEventSerializer.AppendRecord(rec);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[CombatManager] Damage serialization failed (monster): {ex}");
+            }
+        }
+
+        // 2) 광역(AoE) 데미지 적용
+        if (breakdown.aoeDamage > 0 && MonsterManager.Instance != null)
+        {
+            MonsterManager.Instance.ApplyAoEDamage(breakdown.aoeDamage);
+            Debug.Log($"[CombatManager] Staff Effect: AoE {breakdown.aoeDamage} damage applied.");
+        }
+
+        // 3) 그리드 팝업 스폰
+        TrySpawnGridPopups(result, breakdown.finalDamage);
+
+        // 4) 폭탄 해체 이벤트
+        int defusedBombs = (result.RemovedBombPositions != null) ? result.RemovedBombPositions.Count : 0;
+        if (defusedBombs > 0)
+        {
+            try
+            {
+                OnBombDefused?.Invoke(defusedBombs);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[CombatManager] OnBombDefused handler threw: {ex}");
+            }
+        }
+
+        // 5) 승패 체크
+        CheckWinLose();
+
+        // 6) 디버그 이벤트
+        try { GameEvents.RaiseOnDamageCalculationResolved(breakdown, origin); } catch { }
+    }
+    #endregion
 }
