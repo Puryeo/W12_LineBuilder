@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// 몬스???�리?�에 붙여 ?�턴??관리하??컴포?�트(?�리???�선).
-/// - PatternElement[] ???�스?�터?�서 ?�정 (weight ?�드??반드???�리??컴포?�트??존재)
-/// - MonsterAttackManager???�록?�어 TurnManager ?�름?�서 TickTurn() ?�출??
+/// 몬스터 프리팹에 붙여 패턴을 관리하는 컴포넌트(프리팹 필수).
+/// - PatternElement[] 을 인스펙터에서 설정 (weight 필드는 반드시 프리팹 컴포넌트에 존재)
+/// - MonsterAttackManager에 등록되어 TurnManager 흐름에서 TickTurn() 호출됨
 /// </summary>
 [DisallowMultipleComponent]
 public class MonsterController : MonoBehaviour, IMonsterController
@@ -13,17 +13,17 @@ public class MonsterController : MonoBehaviour, IMonsterController
     [Serializable]
     public class PatternElement
     {
-        [Tooltip("?�제 ?�턴 SO")]
+        [Tooltip("실제 패턴 SO")]
         public AttackPatternSO pattern;
 
-        [Tooltip("?�택 비중 (>=0). ?�자?�너가 ?�리?�에???�정?�세??")]
+        [Tooltip("선택 비중 (>=0). 디자이너가 프리팹에서 설정하세요")]
         public int weight = 1;
 
-        [Tooltip("?�행 ???�일 ?�턴???�동 ?�스케줄할지")]
+        [Tooltip("실행 후 동일 패턴을 자동 리스케줄할지")]
         public bool repeat = false;
     }
 
-    [Header("?�턴 ?� (?�리?�에???�정)")]
+    [Header("패턴 풀 (프리팹에서 설정)")]
     public PatternElement[] patternElements;
 
     private readonly List<PatternElement> _patterns = new List<PatternElement>();
@@ -62,7 +62,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         if (patternElements != null && patternElements.Length > 0)
             _patterns.AddRange(patternElements);
 
-        // 초기 ?�동 ?�택: ?�리???�폰 직후 UI???�음 ?�턴???�시?�기 ?�함
+        // 초기 자동 선택: 프리팹 스폰 직후 UI에 첫 패턴을 표시하기 위함
         if (_patterns.Count > 0)
         {
             var initial = SelectNextPattern();
@@ -106,7 +106,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
 
     private void OnMonsterDied(Monster m)
     {
-        // 즉시 ?�턴 ?�리 �?Tick 중�?
+        // 즉시 패턴 정리 및 Tick 중단
         _isDead = true;
         CancelScheduledPattern();
         _ui?.ClearPatternUI();
@@ -115,7 +115,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
             MonsterAttackManager.Instance.Unregister(this);
     }
 
-    /// <summary>?��??�서 ?��??�으�??�턴??주입(?�리??기본 ??��?��? ?�음 ??주입 ??기존 ?�??교체)</summary>
+    /// <summary>외부에서 런타임으로 패턴을 주입(프리팹 기본 대신 사용; 처음 또는 주입 시 기존 패턴 교체)</summary>
     public void SetPatternElements(PatternElement[] elements)
     {
         if (_isDead) return;
@@ -124,7 +124,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         if (elements != null && elements.Length > 0)
             _patterns.AddRange(elements);
         Debug.Log($"[MonsterController] SetPatternElements -> {_patterns.Count} patterns on {name}", this);
-        // UI 초기??
+        // UI 초기화
         _ui?.ClearPatternUI();
         _currentElement = null;
         RemainingTurns = 0;
@@ -217,18 +217,43 @@ public class MonsterController : MonoBehaviour, IMonsterController
         {
             if (pat.attackType == AttackType.Bomb)
             {
-                var bp = pat as BombAttackPatternSO;
-                if (bp != null)
+                // Boss 폭탄 패턴 체크
+                var bossBp = pat as BossBombAttackPatternSO;
+                if (bossBp != null)
                 {
-                    if (BombManager.Instance != null)
+                    if (BombManager.Instance != null && GridManager.Instance != null)
                     {
                         Vector2Int pos;
-                        bool spawned = BombManager.Instance.SpawnRandomGridBomb(bp.startTimer, bp.maxTimer, out pos);
-                        Debug.Log($"[MonsterController] Bomb spawn attempted by {name}: success={spawned} pos={pos}");
+                        bool spawned = BombManager.Instance.SpawnRandomGridBomb(bossBp.startTimer, bossBp.maxTimer, out pos);
+                        if (spawned)
+                        {
+                            // 폭탄 배치 위치 기준으로 반경 내 블럭 삭제
+                            GridManager.Instance.ClearSquareCentered(pos, bossBp.clearRadius);
+                            Debug.Log($"[MonsterController] Boss Bomb spawned at {pos} with {bossBp.clearRadius} clear radius by {name}");
+                        }
+                        else
+                        {
+                            Debug.Log($"[MonsterController] Boss Bomb spawn failed by {name}");
+                        }
                     }
-                    else Debug.LogWarning("[MonsterController] BombManager instance not found.");
+                    else Debug.LogWarning("[MonsterController] BombManager or GridManager instance not found.");
                 }
-                else Debug.LogWarning("[MonsterController] Bomb pattern cast failed.");
+                else
+                {
+                    // 일반 폭탄 패턴
+                    var bp = pat as BombAttackPatternSO;
+                    if (bp != null)
+                    {
+                        if (BombManager.Instance != null)
+                        {
+                            Vector2Int pos;
+                            bool spawned = BombManager.Instance.SpawnRandomGridBomb(bp.startTimer, bp.maxTimer, out pos);
+                            Debug.Log($"[MonsterController] Bomb spawn attempted by {name}: success={spawned} pos={pos}");
+                        }
+                        else Debug.LogWarning("[MonsterController] BombManager instance not found.");
+                    }
+                    else Debug.LogWarning("[MonsterController] Bomb pattern cast failed.");
+                }
             }
             else if (pat.attackType == AttackType.Damage)
             {
@@ -283,7 +308,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
             Debug.LogError($"[MonsterController] Exception during ExecutePattern: {ex}");
         }
 
-        // post-execute: repeat?�면 ?�일 ?�턴 ?�스케�? ?�니�?즉시 ?�음 ?�턴 ?�택?�여 UI 바인???�는 구간 ?�이)
+        // post-execute: repeat이면 동일 패턴 리스케줄; 아니면 즉시 다음 패턴 선택하여 UI 바인딩 (딜레이 없는 구간 방지)
         if (_currentElement != null && _currentElement.repeat && !_isDead)
         {
             RemainingTurns = Math.Max(0, _currentElement.pattern.delayTurns);
@@ -295,7 +320,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
         else
         {
             // 기존: CancelScheduledPattern() -> UI 공백 발생
-            // 변�? 즉시 ?�음 ?�턴???�택?�여 UI ?�시
+            // 변경: 즉시 다음 패턴을 선택하여 UI 표시
             var next = SelectNextPattern();
             if (next != null && next.pattern != null && !_isDead)
             {
@@ -307,7 +332,7 @@ public class MonsterController : MonoBehaviour, IMonsterController
             }
             else
             {
-                // ?�택???�턴???�으�?기존처럼 ?�리??
+                // 선택된 패턴이 없으면 기존처럼 정리만
                 CancelScheduledPattern();
             }
         }
@@ -468,12 +493,12 @@ public class MonsterController : MonoBehaviour, IMonsterController
 
         if (sum <= 0)
         {
-            // fallback uniform
+            // fallback: 균등 분포
             int idx = _rng.Next(0, _patterns.Count);
             return _patterns[idx];
         }
 
-        int r = _rng.Next(0, sum); // ?�수 기반 ?�플�?
+        int r = _rng.Next(0, sum); // 가중치 기반 샘플링
         int acc = 0;
         for (int i = 0; i < _patterns.Count; i++)
         {

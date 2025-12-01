@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1042574797997495745}
   - component: {fileID: 2422529726088274141}
   m_Layer: 5
-  m_Name: Monster_Prefab_LockLover
+  m_Name: Boss_Monster_Prefab_BombLover
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -55,7 +55,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f6aee6ef2fa4de4181b3bdcd4ec8c8b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  monsterName: "\uC790\uBB3C\uC1E0"
+  monsterName: "\uBCF4\uC2A4_\uD3ED\uD0C4"
   maxHP: 50
   monsterUI: {fileID: 1042574797997495745}
   monsterIdx: 0
@@ -92,8 +92,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   patternElements:
-  - pattern: {fileID: 11400000, guid: 382d0ff9ca141b14a90b5b963c518d98, type: 2}
-    weight: 1
+  - pattern: {fileID: 11400000, guid: 9278bd0c7954ed549b735f9342569407, type: 2}
+    weight: 8
     repeat: 0
 --- !u!1 &941270214390936634
 GameObject:
