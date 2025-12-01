@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: BossBombAttackPattern
   m_EditorClassIdentifier: 
   displayName: 
-  attackType: 1
+  attackType: 0
   delayTurns: 2
   repeat: 0
   weight: 1
