@@ -586,6 +586,10 @@ public class MonsterController : MonoBehaviour, IMonsterController, IPhaseAction
     /// </summary>
     protected virtual void PlayAttackAnimationHook(AttackPatternSO pattern)
     {
+        // 기절(그로기) 상태에서는 공격 회전 애니메이션을 재생하지 않는다.
+        if (pattern != null && pattern.attackType == AttackType.Groggy)
+            return;
+
         // Monster 컴포넌트의 공격 애니메이션 재생
         if (_monster != null)
         {
