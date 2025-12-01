@@ -238,6 +238,9 @@ public class TurnManager : MonoBehaviour
         OnPhaseChanged?.Invoke(TurnPhase.TurnEnd);
         Debug.Log($"[TurnManager] ========== Turn {TurnCount} End ==========");
 
+        // 적 턴 종료 후 잠시 대기 (플레이어 턴 UI 진입 전 버퍼)
+        yield return new WaitForSeconds(1.5f);
+
         // 반드시 플래그 해제 (각 페이즈 내부에서 예외 처리)
         _isTurnInProgress = false;
 
