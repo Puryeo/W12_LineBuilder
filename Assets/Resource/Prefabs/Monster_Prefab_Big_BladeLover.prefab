@@ -64,7 +64,7 @@ MonoBehaviour:
   rotationSpeed: 10
   rotationAmount: 15
   floatHeight: 0.3
-  attackRotationAngle: -15
+  attackRotationAngle: 45
   attackAnimationDuration: 0.5
 --- !u!114 &1042574797997495745
 MonoBehaviour:
