@@ -14,6 +14,9 @@ public class MonsterManager : MonoBehaviour
 
     public event Action<int> OnSelectedMonsterChanged; // index (or -1)
 
+    // 데미지 추적 시스템 (애니메이션 동기화용)
+    private List<(Monster monster, float duration)> _damagedMonsters = new List<(Monster, float)>();
+
     [Header("Optional UI (assign to auto-create UI entries)")]
     public GameObject monsterUIPrefab; // prefab with MonsterUI component
     public Transform uiContainer;
@@ -100,22 +103,22 @@ public class MonsterManager : MonoBehaviour
         if (idx != -1) SetSelected(idx);
     }
 
-    public void ApplyDamageToSelected(int amount)
+    public void ApplyDamageToSelected(int amount, bool delayDeath = false)
     {
         var sel = GetSelectedMonster();
         if (sel != null)
-            sel.TakeDamage(amount, "MonsterManager.ApplyDamageToSelected");
+            sel.TakeDamage(amount, "MonsterManager.ApplyDamageToSelected", delayDeath);
         else
             Debug.LogWarning("[MonsterManager] No selected monster to receive damage.");
     }
 
-    public void ApplyDamageToIndex(int index, int amount)
+    public void ApplyDamageToIndex(int index, int amount, bool delayDeath = false)
     {
         if (index >= 0 && index < monsters.Count)
-            monsters[index].TakeDamage(amount, "MonsterManager.ApplyDamageToIndex");
+            monsters[index].TakeDamage(amount, "MonsterManager.ApplyDamageToIndex", delayDeath);
     }
 
-    public void ApplyAoEDamage(int amount)
+    public void ApplyAoEDamage(int amount, bool delayDeath = false)
     {
         if (amount <= 0) return;
 
@@ -124,7 +127,7 @@ public class MonsterManager : MonoBehaviour
         {
             if (m != null && m.currentHP > 0)
             {
-                m.TakeDamage(amount, "AoE_Staff");
+                m.TakeDamage(amount, "AoE_Staff", delayDeath);
             }
         }
     }
@@ -235,4 +238,52 @@ public class MonsterManager : MonoBehaviour
         }
         return false;
     }
+
+    #region Damage Tracking System
+    /// <summary>
+    /// 데미지 추적 시작 (LineClearAction Phase 시작 시 호출)
+    /// </summary>
+    public void StartDamageTracking()
+    {
+        _damagedMonsters.Clear();
+        Debug.Log("[MonsterManager] Damage tracking started");
+    }
+
+    /// <summary>
+    /// 데미지를 받은 몬스터 등록 (Monster.TakeDamage에서 호출)
+    /// </summary>
+    /// <param name="monster">데미지를 받은 몬스터</param>
+    /// <param name="duration">애니메이션 지속 시간</param>
+    public void TrackDamagedMonster(Monster monster, float duration)
+    {
+        if (monster == null) return;
+
+        // 중복 체크 (같은 몬스터가 여러 번 등록되지 않도록)
+        bool alreadyTracked = false;
+        foreach (var (m, d) in _damagedMonsters)
+        {
+            if (m == monster)
+            {
+                alreadyTracked = true;
+                break;
+            }
+        }
+
+        if (!alreadyTracked)
+        {
+            _damagedMonsters.Add((monster, duration));
+            Debug.Log($"[MonsterManager] Tracked damaged monster: {monster.monsterName} (duration: {duration}s)");
+        }
+    }
+
+    /// <summary>
+    /// 데미지를 받은 몬스터 목록 반환 (LineClearAction Phase 3.5에서 호출)
+    /// </summary>
+    /// <returns>데미지 받은 (몬스터, 애니메이션 시간) 리스트</returns>
+    public List<(Monster monster, float duration)> GetDamagedMonsters()
+    {
+        Debug.Log($"[MonsterManager] GetDamagedMonsters: {_damagedMonsters.Count} monster(s) damaged");
+        return new List<(Monster, float)>(_damagedMonsters); // 복사본 반환
+    }
+    #endregion
 }

@@ -2167,8 +2167,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &156965966
 GameObject:
   m_ObjectHideFlags: 0
@@ -2417,8 +2418,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &163202787
 GameObject:
   m_ObjectHideFlags: 0
@@ -4393,8 +4395,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -6218,8 +6221,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &770383568
 GameObject:
   m_ObjectHideFlags: 0
@@ -6614,6 +6618,7 @@ MonoBehaviour:
   sordBonusPerBlock: 1
   gridDamagePopupPrefab: {fileID: 8610739867175518237, guid: c83136a3fcba079459ced3e4f3a06910, type: 3}
   gridPopupOffset: {x: 0, y: 0.2, z: 0}
+  lineClearHighlighter: {fileID: 1841732837}
   playerHP: 0
   monsterHP: 0
 --- !u!4 &796807202
@@ -7647,8 +7652,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &879862597
 GameObject:
   m_ObjectHideFlags: 0
@@ -7969,8 +7975,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &908171392
 GameObject:
   m_ObjectHideFlags: 0
@@ -9163,8 +9170,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1020157978
 GameObject:
   m_ObjectHideFlags: 0
@@ -9732,8 +9740,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1085107363
 GameObject:
   m_ObjectHideFlags: 0
@@ -10683,7 +10692,7 @@ Canvas:
   m_Enabled: 1
   serializedVersion: 3
   m_RenderMode: 0
-  m_Camera: {fileID: 0}
+  m_Camera: {fileID: 519420031}
   m_PlaneDistance: 100
   m_PixelPerfect: 0
   m_ReceivesEvents: 1
@@ -11422,6 +11431,7 @@ GameObject:
   - component: {fileID: 1227308435}
   - component: {fileID: 1227308434}
   - component: {fileID: 1227308436}
+  - component: {fileID: 1227308437}
   m_Layer: 0
   m_Name: TurnManager
   m_TagString: Untagged
@@ -11441,6 +11451,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60b8a57d62385194e9e24e9f5ec9b082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  monsterAttackMode: 0
 --- !u!4 &1227308435
 Transform:
   m_ObjectHideFlags: 0
@@ -11477,6 +11488,23 @@ MonoBehaviour:
   bombTimerFontSize: 8
   bombTimerColor: {r: 1, g: 1, b: 1, a: 1}
   bombTimerZOffset: 0.1
+--- !u!114 &1227308437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1227308433}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ae2da771e48cb094c8da6fc2c2a13135, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  turnAnnouncerPrefab: {fileID: 6251426982097427907, guid: fed6b53156f2854478183d15cc6793b6, type: 3}
+  canvasParent: {fileID: 1131186223}
+  playerTurnMessage: "- \uB0B4 \uD134 -"
+  enemyTurnMessage: "- \uC801\uC758 \uD134 -"
+  enableDebugLogs: 0
 --- !u!1 &1245790479
 GameObject:
   m_ObjectHideFlags: 0
@@ -11800,8 +11828,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1256053662
 GameObject:
   m_ObjectHideFlags: 0
@@ -12080,8 +12109,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1320724062
 GameObject:
   m_ObjectHideFlags: 0
@@ -12426,8 +12456,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1359378266
 GameObject:
   m_ObjectHideFlags: 0
@@ -14605,8 +14636,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1656007657
 GameObject:
   m_ObjectHideFlags: 0
@@ -14876,11 +14908,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   option1Btn: {fileID: 196477125}
-  option2Btn: {fileID: 958251289}
-  option3Btn: {fileID: 64420197}
   highlight1: {fileID: 1980605156}
-  highlight2: {fileID: 526529993}
-  highlight3: {fileID: 440278596}
+  option1Icon: {fileID: 0}
+  option1Text: {fileID: 0}
+  staffIcon: {fileID: 0}
+  crossIcon: {fileID: 0}
+  bratCandyIcon: {fileID: 0}
+  staffText: 
+  crossText: 
+  bratCandyText: 
   confirmBtn: {fileID: 629435263}
   cancelBtn: {fileID: 309513872}
   rewardAmount: 4
@@ -14979,8 +15015,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1683927550
 GameObject:
   m_ObjectHideFlags: 0
@@ -15926,6 +15963,7 @@ MonoBehaviour:
   monsterManager: {fileID: 796807203}
   inventoryUI: {fileID: 2110694718}
   currentState: 0
+  autoEquipFirstRound: 1
 --- !u!4 &1774762812
 Transform:
   m_ObjectHideFlags: 0
@@ -16879,6 +16917,8 @@ GameObject:
   - component: {fileID: 1841732834}
   - component: {fileID: 1841732835}
   - component: {fileID: 1841732836}
+  - component: {fileID: 1841732837}
+  - component: {fileID: 1841732838}
   m_Layer: 0
   m_Name: 'GridManager '
   m_TagString: Untagged
@@ -16949,10 +16989,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 1841732831}
-  lineMaterial: {fileID: 422672776}
-  lineColor: {r: 0.5471698, g: 0.5471698, b: 0.5471698, a: 1}
-  lineWidth: 0.03
-  allowEditorRebuild: 0
+  attributeMap: {fileID: 0}
+  targetAttribute: 5
+  normalLineMaterial: {fileID: 0}
+  normalLineColor: {r: 1, g: 1, b: 1, a: 0.1}
+  normalLineWidth: 0.02
+  fieryLineMaterial: {fileID: 0}
+  fieryLineColor: {r: 1, g: 0.4, b: 0, a: 1.5}
+  fireLineWidth: 0.15
+  fireTiling: {x: 5, y: 1}
+  fireScrollSpeed: {x: 2, y: 0}
+  flickerIntensity: 0.1
+  fireOffset: {x: 0, y: 0, z: -0.05}
+  enableQuadrantHighlight: 1
+  quadrantHighlightColor: {r: 1, g: 1, b: 0, a: 1}
+  quadrantHighlightWidth: 0.1
 --- !u!114 &1841732834
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16982,6 +17033,7 @@ MonoBehaviour:
   gridManager: {fileID: 1841732831}
   shieldPerLine: 10
   applyShieldPerLine: 1
+  healPerCrossLine: 10
 --- !u!114 &1841732836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16997,6 +17049,38 @@ MonoBehaviour:
   perTurnGainLimit: 20
   totalCap: 40
   defaultDurationTurns: 5
+--- !u!114 &1841732837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1841732830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60b6c873081e6894d83169fe9d566a43, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lineRendererPrefab: {fileID: 0}
+  highlightColor: {r: 1, g: 0, b: 0.06987047, a: 1}
+  lineWidth: 0.1
+  duration: 1
+  lineMaterial: {fileID: 0}
+  zOffset: 1
+  enableDebugLogs: 1
+--- !u!114 &1841732838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1841732830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90948daa11cb9504dbc7b42a1f76f17e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableRotation: 1
 --- !u!1 &1843987832
 GameObject:
   m_ObjectHideFlags: 0
@@ -18051,8 +18135,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &1926932073
 GameObject:
   m_ObjectHideFlags: 0
@@ -19134,8 +19219,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &2052334623
 GameObject:
   m_ObjectHideFlags: 0
@@ -19366,8 +19452,9 @@ MonoBehaviour:
   woodSordSprite: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShieldSprite: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
+  lockedSprite: {fileID: 0}
 --- !u!1 &2081500125
 GameObject:
   m_ObjectHideFlags: 0
@@ -19735,7 +19822,7 @@ MonoBehaviour:
   woodSord: {fileID: -2678498615165238795, guid: d6148ca274264f045ae9b505369f8ca9, type: 3}
   woodShield: {fileID: 2389193319765324094, guid: 30039a773a5628341870ef8bfe965596, type: 3}
   staff: {fileID: 8573549099317436776, guid: 0b3dd3335d706d7478a922caf10fe37c, type: 3}
-  hammer: {fileID: 5393448996881579246, guid: 4e3856ce7e133e14fa2a29eec090c2b2, type: 3}
+  bratCandy: {fileID: 0}
   cross: {fileID: 8482712648628362555, guid: 6bf9102bb5307134592e4b41895f1b94, type: 3}
   AllInventoryItem: []
 --- !u!1 &2120462603

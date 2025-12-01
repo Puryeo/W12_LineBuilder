@@ -40,4 +40,48 @@ public class MonsterAttackManager : MonoBehaviour
             try { ctrl.TickTurn(); } catch (System.Exception ex) { Debug.LogError($"[MonsterAttackManager] Exception in TickTurn: {ex}"); }
         }
     }
+
+    /// <summary>
+    /// 실행 준비된 몬스터 리스트 반환 (RemainingTurns <= 0 && !IsDead && active)
+    /// TurnManager의 MonsterAttackPhase에서 사용
+    /// </summary>
+    public List<IMonsterController> GetReadyMonsters()
+    {
+        var ready = new List<IMonsterController>();
+
+        // 역순으로 순회하면서 null 제거
+        for (int i = _registered.Count - 1; i >= 0; i--)
+        {
+            var ctrl = _registered[i];
+
+            // Null 체크
+            if (ctrl == null)
+            {
+                _registered.RemoveAt(i);
+                continue;
+            }
+
+            // MonoBehaviour 체크
+            var mb = ctrl as MonoBehaviour;
+            if (mb == null || mb.gameObject == null || !mb.gameObject.activeSelf)
+            {
+                continue;
+            }
+
+            // Monster 사망 체크
+            var monster = mb.GetComponent<Monster>();
+            if (monster != null && monster.IsDead)
+            {
+                continue;
+            }
+
+            // RemainingTurns 체크
+            if (ctrl.RemainingTurns <= 0)
+            {
+                ready.Add(ctrl);
+            }
+        }
+
+        return ready;
+    }
 }

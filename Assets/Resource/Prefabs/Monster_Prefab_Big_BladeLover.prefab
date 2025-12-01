@@ -60,6 +60,12 @@ MonoBehaviour:
   monsterUI: {fileID: 1042574797997495745}
   monsterIdx: 0
   startingHP: -1
+  hitDuration: 1
+  rotationSpeed: 10
+  rotationAmount: 15
+  floatHeight: 0.3
+  attackRotationAngle: -15
+  attackAnimationDuration: 0.5
 --- !u!114 &1042574797997495745
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -79,6 +85,9 @@ MonoBehaviour:
   attackIconImage: {fileID: 8841679581211247512}
   turnsText: {fileID: 486714108093566241}
   autoBindToLocalMonster: 1
+  flashDuration: 0.5
+  flashCount: 2
+  flashColor: {r: 1, g: 0.3, b: 0.3, a: 1}
 --- !u!114 &2422529726088274141
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,6 +107,8 @@ MonoBehaviour:
   - pattern: {fileID: 11400000, guid: 4396fdeacd484594d98a60d1abe693ea, type: 2}
     weight: 10
     repeat: 0
+  defaultAttackDuration: 1.2
+  defaultBombSpawnDuration: 0.8
 --- !u!1 &941270214390936634
 GameObject:
   m_ObjectHideFlags: 0

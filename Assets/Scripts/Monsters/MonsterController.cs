@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,9 +7,10 @@ using UnityEngine;
 /// 몬스터 프리팹에 붙여 패턴을 관리하는 컴포넌트(프리팹 필수).
 /// - PatternElement[] 을 인스펙터에서 설정 (weight 필드는 반드시 프리팹 컴포넌트에 존재)
 /// - MonsterAttackManager에 등록되어 TurnManager 흐름에서 TickTurn() 호출됨
+/// - IPhaseAction을 구현하여 턴 페이즈 시스템과 통합
 /// </summary>
 [DisallowMultipleComponent]
-public class MonsterController : MonoBehaviour, IMonsterController
+public class MonsterController : MonoBehaviour, IMonsterController, IPhaseAction
 {
     [Serializable]
     public class PatternElement
@@ -25,6 +27,13 @@ public class MonsterController : MonoBehaviour, IMonsterController
 
     [Header("패턴 풀 (프리팹에서 설정)")]
     public PatternElement[] patternElements;
+
+    [Header("Animation Settings")]
+    [Tooltip("공격 애니메이션 기본 지속 시간 (나중에 구현할 애니메이션 참고용)")]
+    public float defaultAttackDuration = 1.2f;
+
+    [Tooltip("폭탄 스폰 애니메이션 기본 지속 시간")]
+    public float defaultBombSpawnDuration = 0.8f;
 
     private readonly List<PatternElement> _patterns = new List<PatternElement>();
 
@@ -192,8 +201,9 @@ public class MonsterController : MonoBehaviour, IMonsterController
         RemainingTurns = Math.Max(0, RemainingTurns - 1);
         _ui?.UpdatePatternTurns(RemainingTurns);
 
-        if (RemainingTurns <= 0)
-            ExecutePattern();
+        // NOTE: ExecutePattern()은 이제 TurnManager의 MonsterAttackPhase에서만 호출됨 (이중 호출 방지)
+        // if (RemainingTurns <= 0)
+        //     ExecutePattern();
     }
 
     public void ExecutePattern()
@@ -510,5 +520,142 @@ public class MonsterController : MonoBehaviour, IMonsterController
 
         return _patterns[_rng.Next(0, _patterns.Count)];
     }
-}
 
+    #region IPhaseAction Implementation
+    /// <summary>
+    /// 이 몬스터가 강제 직렬 실행을 요구하는지 (패턴의 forceSequential 값)
+    /// </summary>
+    public bool ForceSequential
+    {
+        get
+        {
+            if (_currentElement == null || _currentElement.pattern == null)
+                return false;
+            return _currentElement.pattern.forceSequential;
+        }
+    }
+
+    /// <summary>
+    /// 페이즈 액션 실행 (애니메이션 포함)
+    /// TurnManager의 MonsterAttackPhase에서 호출됨
+    /// </summary>
+    public IEnumerator Play(Action<float> reportDuration)
+    {
+        float startTime = Time.time;
+
+        // 사망 체크
+        if (_isDead || (_monster != null && _monster.IsDead))
+        {
+            Debug.Log($"[MonsterController] {name} is dead, skipping attack");
+            reportDuration?.Invoke(0f);
+            yield break;
+        }
+
+        // 패턴 체크
+        if (_currentElement == null || _currentElement.pattern == null)
+        {
+            Debug.LogWarning($"[MonsterController] {name} has no pattern to execute");
+            reportDuration?.Invoke(0f);
+            yield break;
+        }
+
+        var pattern = _currentElement.pattern;
+        Debug.Log($"[MonsterController] {name} executing pattern: {pattern.displayName}");
+
+        // 애니메이션 훅 호출 (나중에 구현)
+        PlayAttackAnimationHook(pattern);
+
+        // 애니메이션 대기
+        float duration = pattern.attackType == AttackType.Bomb ? defaultBombSpawnDuration : defaultAttackDuration;
+        yield return new WaitForSeconds(duration);
+
+        // 실제 패턴 실행 (데미지/폭탄 적용)
+        ExecutePatternLogic(pattern);
+
+        // 다음 패턴 스케줄링
+        ScheduleNextPattern();
+
+        // 걸린 시간 보고
+        float elapsed = Time.time - startTime;
+        reportDuration?.Invoke(elapsed);
+        Debug.Log($"[MonsterController] {name} attack completed in {elapsed:F2}s");
+    }
+
+    /// <summary>
+    /// 애니메이션 재생 훅 (공격 시 호출)
+    /// </summary>
+    protected virtual void PlayAttackAnimationHook(AttackPatternSO pattern)
+    {
+        // Monster 컴포넌트의 공격 애니메이션 재생
+        if (_monster != null)
+        {
+            _monster.PlayAttackAnimation();
+        }
+    }
+
+    /// <summary>
+    /// 실제 패턴 실행 로직 (기존 ExecutePattern의 핵심 부분)
+    /// </summary>
+    private void ExecutePatternLogic(AttackPatternSO pattern)
+    {
+        try
+        {
+            if (pattern.attackType == AttackType.Bomb)
+            {
+                var bp = pattern as BombAttackPatternSO;
+                if (bp != null && BombManager.Instance != null)
+                {
+                    Vector2Int pos;
+                    bool spawned = BombManager.Instance.SpawnRandomGridBomb(bp.startTimer, bp.maxTimer, out pos);
+                    Debug.Log($"[MonsterController] Bomb spawn: success={spawned} pos={pos} by {name}");
+                }
+            }
+            else if (pattern.attackType == AttackType.Damage)
+            {
+                var dp = pattern as DamageAttackPatternSO;
+                if (dp != null && CombatManager.Instance != null)
+                {
+                    CombatManager.Instance.ApplyPlayerDamage(dp.damage);
+                    Debug.Log($"[MonsterController] Applied {dp.damage} dmg to player by {name}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError($"[MonsterController] Exception during pattern execution on {name}: {ex}");
+        }
+    }
+
+    /// <summary>
+    /// 패턴 실행 후 다음 패턴 스케줄링
+    /// </summary>
+    private void ScheduleNextPattern()
+    {
+        if (_isDead) return;
+
+        if (_currentElement != null && _currentElement.repeat)
+        {
+            // Repeat 패턴
+            RemainingTurns = Math.Max(0, _currentElement.pattern.delayTurns);
+            _ui?.UpdatePatternTurns(RemainingTurns);
+            Debug.Log($"[MonsterController] Pattern '{_currentElement.pattern.displayName}' repeat scheduled for {RemainingTurns} turns on {name}");
+        }
+        else
+        {
+            // 다음 패턴 선택
+            var next = SelectNextPattern();
+            if (next != null && next.pattern != null)
+            {
+                _currentElement = next;
+                RemainingTurns = Math.Max(0, next.pattern.delayTurns);
+                _ui?.BindPattern(CurrentPattern, RemainingTurns);
+                Debug.Log($"[MonsterController] Next pattern '{next.pattern.displayName}' scheduled for {RemainingTurns} turns on {name}");
+            }
+            else
+            {
+                CancelScheduledPattern();
+            }
+        }
+    }
+    #endregion
+}
