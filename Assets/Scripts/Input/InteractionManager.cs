@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -27,6 +27,12 @@ public class InteractionManager : MonoBehaviour
     // 회전 상태: 0..3 (90deg steps clockwise)
     private int _ghostRotationSteps = 0;
     public int GhostRotationSteps => _ghostRotationSteps;
+
+    /// <summary>
+    /// 현재 블록을 드래그 중인지 여부 (외부에서 확인용)
+    /// GridRotationManager 등에서 블록 드래그 중일 때 그리드 회전을 비활성화하기 위해 사용
+    /// </summary>
+    public bool IsDragging => _dragging;
 
     private void Awake()
     {

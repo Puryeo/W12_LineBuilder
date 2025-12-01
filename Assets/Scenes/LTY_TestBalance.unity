@@ -11469,10 +11469,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enableAutoSpawn: 0
-  minBombSpawnTurns: 3
-  maxBombSpawnTurns: 5
-  bombTimerOnSpawn: 6
-  bombMaxTimer: 6
+  minBombSpawnTurns: 2
+  maxBombSpawnTurns: 2
+  bombTimerOnSpawn: 2
+  bombMaxTimer: 2
   bombTimerFont: {fileID: 11400000, guid: bf995470cf1ca9541bb81a691f2eae81, type: 2}
   bombTimerFontSize: 8
   bombTimerColor: {r: 1, g: 1, b: 1, a: 1}
@@ -16875,6 +16875,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1841732832}
   - component: {fileID: 1841732831}
+  - component: {fileID: 1841732837}
   - component: {fileID: 1841732833}
   - component: {fileID: 1841732834}
   - component: {fileID: 1841732835}
@@ -16952,6 +16953,9 @@ MonoBehaviour:
   lineMaterial: {fileID: 422672776}
   lineColor: {r: 0.5471698, g: 0.5471698, b: 0.5471698, a: 1}
   lineWidth: 0.03
+  enableQuadrantHighlight: 1
+  quadrantHighlightColor: {r: 1, g: 1, b: 0, a: 1}
+  quadrantHighlightWidth: 0.08
   allowEditorRebuild: 0
 --- !u!114 &1841732834
 MonoBehaviour:
@@ -16997,6 +17001,19 @@ MonoBehaviour:
   perTurnGainLimit: 20
   totalCap: 40
   defaultDurationTurns: 5
+--- !u!114 &1841732837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1841732830}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90948daa11cb9504dbc7b42a1f76f17e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  enableRotation: 1
 --- !u!1 &1843987832
 GameObject:
   m_ObjectHideFlags: 0
@@ -18631,7 +18648,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 078e2f94b2916584fa167b5efca286fc, type: 2}
   - {fileID: 11400000, guid: 9c6c253026cc40b4c8434931aba6a9f7, type: 2}
   duplicatePerType: 2
-  handSize: 3
+  handSize: 4
 --- !u!4 &1980022381
 Transform:
   m_ObjectHideFlags: 0
