@@ -174,9 +174,33 @@ public class GridRotationManager : MonoBehaviour
                     {
                         bool updated = BombManager.Instance.UpdateBombPosition(oldGlobalPos, newGlobalPos);
                         if (updated)
+                        {
                             Debug.Log($"[GridRotationManager] Updated bomb position: {oldGlobalPos} -> {newGlobalPos}");
+
+                            // BombManager의 실제 Bomb 타이머 값을 가져와서 Cell에 동기화
+                            var bombs = BombManager.Instance.GetAllBombs();
+                            foreach (var bomb in bombs)
+                            {
+                                if (bomb != null && bomb.isGridBomb && bomb.gridPos == newGlobalPos)
+                                {
+                                    // Cell 데이터 업데이트 (실제 타이머 값 반영)
+                                    var updatedCell = cell;
+                                    updatedCell.bombTimer = bomb.timer;
+                                    SetCellAt(newGlobalPos, updatedCell);
+
+                                    // 올바른 타이머로 뷰 재생성
+                                    RecreateBlockView(newGlobalPos, updatedCell);
+                                    Debug.Log($"[GridRotationManager] Synced bomb timer at {newGlobalPos}: {bomb.timer}");
+                                    break;
+                                }
+                            }
+                        }
                     }
-                    RecreateBlockView(newGlobalPos, cell);
+                    else
+                    {
+                        // BombManager가 없으면 그냥 기존 cell 데이터로 뷰 생성
+                        RecreateBlockView(newGlobalPos, cell);
+                    }
                 }
                 else if (cell.occupied)
                 {
